@@ -2,17 +2,20 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { SupabaseService } from './supabase/supabase.service';
+import { SupabaseModule } from './supabase/supabase.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { FishingSpotsModule } from './fishing-spots/fishing-spots.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // .env dosyasını tüm projede erişilebilir yapar
     }),
+    SupabaseModule,
     ProfilesModule,
+    FishingSpotsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, SupabaseService],
+  providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

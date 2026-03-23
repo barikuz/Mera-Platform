@@ -1,42 +1,72 @@
+/**
+ * SupabaseService - Supabase Veritabanı Bağlantı Servisi
+ *
+ * Bu servis, Supabase istemcisinin yaşam döngüsünü yönetir.
+ * Uygulama başlatıldığında bağlantıyı kurar ve diğer servislerin
+ * veritabanı işlemleri için kullanabileceği istemciyi sağlar.
+ *
+ * Gerekli ortam değişkenleri (.env):
+ * - SUPABASE_URL: Supabase proje URL'i
+ * - SUPABASE_ANON_KEY: Supabase anonim API anahtarı
+ */
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class SupabaseService implements OnModuleInit {
-    private supabase: SupabaseClient;
-    private readonly logger = new Logger(SupabaseService.name);
+  // Supabase istemci instance'ı - tüm veritabanı işlemleri için kullanılır
+  private supabase: SupabaseClient;
 
-    // Uygulama başladığında bu fonksiyon otomatik çalışır
-    onModuleInit() {
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  // NestJS Logger - uygulama logları için
+  private readonly logger = new Logger(SupabaseService.name);
 
-        if (!supabaseUrl || !supabaseKey) {
-            this.logger.error('Supabase URL veya Key .env dosyasında bulunamadı!');
-            return;
-        }
+  /**
+   * OnModuleInit lifecycle hook'u
+   * Modül başlatıldığında otomatik olarak çağrılır.
+   * Supabase istemcisini oluşturur ve bağlantıyı test eder.
+   */
+  onModuleInit() {
+    // Ortam değişkenlerinden Supabase yapılandırmasını al
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-        this.supabase = createClient(supabaseUrl, supabaseKey);
-
-        // Bağlantıyı hemen test edelim
-        this.checkConnection();
+    // Yapılandırma eksikse hata logla ve çık
+    if (!supabaseUrl || !supabaseKey) {
+      this.logger.error('Supabase URL veya Key .env dosyasında bulunamadı!');
+      return;
     }
 
-    private async checkConnection() {
-        try {
-            // Auth servisinin ayakta olup olmadığını basit bir sorguyla test ediyoruz
-            const { data, error } = await this.supabase.auth.getSession();
+    // Supabase istemcisini oluştur
+    this.supabase = createClient(supabaseUrl, supabaseKey);
 
-            if (error) throw error;
+    // Bağlantıyı doğrulamak için test sorgusu çalıştır
+    this.checkConnection();
+  }
 
-            this.logger.log('✅ Supabase bağlantısı başarılı! Auth servisi hazır.');
-        } catch (err) {
-            this.logger.error('❌ Supabase bağlantı hatası:', err.message);
-        }
+  /**
+   * Supabase bağlantısını test eder.
+   * Auth servisine basit bir sorgu göndererek bağlantının sağlıklı olduğunu doğrular.
+   */
+  private async checkConnection() {
+    try {
+      // Auth servisinin ayakta olup olmadığını basit bir sorguyla test ediyoruz
+      const { error } = await this.supabase.auth.getSession();
+
+      if (error) throw error;
+
+      this.logger.log('✅ Supabase bağlantısı başarılı! Auth servisi hazır.');
+    } catch (err) {
+      this.logger.error('❌ Supabase bağlantı hatası:', (err as Error).message);
     }
+  }
 
-    // Diğer servislerin kullanabilmesi için istemciyi dışarı açıyoruz
-    getClient() {
-        return this.supabase;
-    }
+  /**
+   * Supabase istemcisini döndürür.
+   * Diğer servisler bu metodu kullanarak veritabanı işlemleri yapabilir.
+   *
+   * @returns SupabaseClient - Yapılandırılmış Supabase istemcisi
+   */
+  getClient() {
+    return this.supabase;
+  }
 }
