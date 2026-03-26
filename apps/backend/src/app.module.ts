@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SupabaseModule } from './supabase/supabase.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { FishingSpotsModule } from './fishing-spots/fishing-spots.module';
+import { WeatherModule } from './weather/weather.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { FishingSpotsModule } from './fishing-spots/fishing-spots.module';
     SupabaseModule,
     ProfilesModule,
     FishingSpotsModule,
+    WeatherModule,
   ],
   controllers: [AppController],
   providers: [AppService],
