@@ -24,4 +24,13 @@ export class WeatherResponseDto {
     example: 1013,
   })
   pressure: number;
+
+  @ApiProperty({
+    description: 'Balıkçılar için güvenlik uyarıları',
+    example: [
+      'Şiddetli Rüzgar! Suya (özellikle tekneyle) açılmak tehlikeli olabilir.',
+    ],
+    type: [String],
+  })
+  safetyWarnings: string[];
 }

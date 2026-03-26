@@ -77,6 +77,7 @@ export class WeatherService {
         temperature: data.main.temp,
         windSpeed: data.wind.speed,
         pressure: data.main.pressure,
+        safetyWarnings: this.evaluateSafety(data.wind.speed, data.main.temp),
       };
     } catch (error) {
       // Timeout hatasi kontrolu
@@ -100,5 +101,30 @@ export class WeatherService {
         'Hava durumu servisi ile iletisim kurulamadi',
       );
     }
+  }
+
+  /**
+   * Hava kosullarina gore guvenlik uyarilarini degerlendirir.
+   *
+   * @param windSpeed - Ruzgar hizi (m/s)
+   * @param temp - Sicaklik (Celsius)
+   * @returns Uyari mesajlari dizisi
+   */
+  private evaluateSafety(windSpeed: number, temp: number): string[] {
+    const warnings: string[] = [];
+
+    if (windSpeed > 10) {
+      warnings.push(
+        'Şiddetli Rüzgar! Suya (özellikle tekneyle) açılmak tehlikeli olabilir.',
+      );
+    }
+    if (temp < 5) {
+      warnings.push('Aşırı Soğuk! Hipotermi ve buzlanma riskine dikkat edin.');
+    }
+    if (temp > 35) {
+      warnings.push('Kavurucu Sıcak! Güneş çarpması riskine karşı önlem alın.');
+    }
+
+    return warnings;
   }
 }

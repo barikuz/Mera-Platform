@@ -28,4 +28,5 @@ export interface WeatherData {
   temperature: number; // Sicaklik (Celsius)
   windSpeed: number; // Ruzgar hizi (m/s)
   pressure: number; // Basinc (hPa)
+  safetyWarnings: string[]; // Balikcilar icin guvenlik uyarilari
 }
