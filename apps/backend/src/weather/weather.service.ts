@@ -119,7 +119,9 @@ export class WeatherService {
       );
     }
     if (temp < 5) {
-      warnings.push('Aşırı Soğuk! Hipotermi ve buzlanma riskine dikkat edin.');
+      warnings.push(
+        'Dondurucu Soğuk! Hipotermi ve buzlanma riskine dikkat edin.',
+      );
     }
     if (temp > 35) {
       warnings.push('Kavurucu Sıcak! Güneş çarpması riskine karşı önlem alın.');
