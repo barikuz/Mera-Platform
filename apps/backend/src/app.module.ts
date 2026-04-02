@@ -6,6 +6,7 @@ import { SupabaseModule } from './supabase/supabase.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { FishingSpotsModule } from './fishing-spots/fishing-spots.module';
 import { WeatherModule } from './weather/weather.module';
+import { ShopModule } from './shop/shop.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { WeatherModule } from './weather/weather.module';
     ProfilesModule,
     FishingSpotsModule,
     WeatherModule,
+    ShopModule,
   ],
   controllers: [AppController],
   providers: [AppService],
