@@ -9,7 +9,9 @@ async function bootstrap() {
     // Swagger Yapılandırması (Menü Tasarımı)
     const config = new DocumentBuilder()
       .setTitle('Mera Platform API')
-      .setDescription('Mera uygulamasının Web ve Mobil istemcileri için API dokümantasyonu.')
+      .setDescription(
+        'Mera uygulamasının Web ve Mobil istemcileri için API dokümantasyonu.',
+      )
       .setVersion('1.0')
       .addBearerAuth() // İleride kullanıcı giriş yapınca Token göndermek için lazım olacak
       .build();
