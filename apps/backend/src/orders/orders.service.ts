@@ -4,36 +4,32 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { SupabaseService } from '../supabase/supabase.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { randomUUID } from 'crypto';
+import { IyzipayService } from '../iyzipay/iyzipay.service.js';
+import { SupabaseService } from '../supabase/supabase.service.js';
+import { CreateOrderDto } from './dto/create-order.dto.js';
+import {
+  AuthenticatedOrderUser,
+  CreatedOrderPayload,
+  OrderItem,
+  VerifiedProduct,
+} from './interfaces/orders.types.js';
 
-type OrderItem = {
-  productId: string;
-  quantity: number;
-};
-
-type VerifiedProduct = {
-  productId: string;
-  unitPrice: number;
-};
-
-type CreatedOrderPayload = {
-  id: string;
-  user_id: string;
-  total_amount: number;
-  shipping_name: string;
-  shipping_phone: string;
-  shipping_address: string;
-  status: string;
-  created_at?: string;
-  updated_at?: string;
-};
-
+// Bu servis, siparis olusturma akisini orkestre eder: fiyat dogrulama, odeme ve RPC kaydi.
 @Injectable()
 export class OrdersService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly iyzipayService: IyzipayService,
+  ) {}
 
-  async createOrder(userId: string, createOrderDto: CreateOrderDto) {
+  // Siparis istegini uctan uca yonetir ve yalnizca odeme basariliysa kayit olusturur.
+  async createOrder(
+    userId: string,
+    createOrderDto: CreateOrderDto,
+    authUser?: AuthenticatedOrderUser,
+    clientIp = '127.0.0.1',
+  ) {
     if (!createOrderDto.items.length) {
       throw new BadRequestException('Siparis en az bir urun icermelidir');
     }
@@ -45,7 +41,7 @@ export class OrdersService {
       verifiedProducts.map((product) => [product.productId, product.unitPrice]),
     );
 
-    const totalAmount = createOrderDto.items.reduce((sum, item) => {
+    const pricedItems = createOrderDto.items.map((item: OrderItem) => {
       const unitPrice = verifiedPriceMap.get(item.productId);
 
       if (unitPrice === undefined) {
@@ -54,17 +50,45 @@ export class OrdersService {
         );
       }
 
-      return sum + unitPrice * item.quantity;
+      return {
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice,
+      };
+    });
+
+    const totalAmount = pricedItems.reduce((sum, item) => {
+      return sum + item.unitPrice * item.quantity;
     }, 0);
 
-    const orderItems = createOrderDto.items.map((item: OrderItem) => ({
+    const orderItems = pricedItems.map((item) => ({
       product_id: item.productId,
       quantity: item.quantity,
-      unit_price: verifiedPriceMap.get(item.productId),
+      unit_price: item.unitPrice,
     }));
 
     if (orderItems.some((item) => item.unit_price === undefined)) {
       throw new InternalServerErrorException('Siparis kalemleri hazirlanamadi');
+    }
+
+    const conversationId = randomUUID();
+    const paymentResponse = await this.iyzipayService.createIyzipayPayment({
+      userId,
+      totalAmount,
+      createOrderDto,
+      pricedItems,
+      conversationId,
+      authUser,
+      clientIp,
+    });
+
+    if (paymentResponse.status !== 'success') {
+      const errorMessage =
+        paymentResponse.errorMessage ||
+        paymentResponse.errorCode ||
+        'Odeme islemi basarisiz oldu';
+
+      throw new BadRequestException(errorMessage);
     }
 
     const rpcResult = (await this.supabaseService
@@ -93,9 +117,14 @@ export class OrdersService {
     return {
       message: 'Siparis basariyla olusturuldu',
       data: data as CreatedOrderPayload,
+      payment: {
+        conversationId,
+        paymentId: paymentResponse.paymentId,
+      },
     };
   }
 
+  // Urun fiyatlarini veritabanindan dogrular ve sunucu tarafi fiyat kaynagini olusturur.
   private async verifyProductPrices(
     items: OrderItem[],
   ): Promise<VerifiedProduct[]> {
