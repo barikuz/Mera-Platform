@@ -8,6 +8,7 @@ import { FishingSpotsModule } from './fishing-spots/fishing-spots.module';
 import { WeatherModule } from './weather/weather.module';
 import { ShopModule } from './shop/shop.module';
 import { OrdersModule } from './orders/orders.module';
+import { CatchesModule } from './catches/catches.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { OrdersModule } from './orders/orders.module';
     WeatherModule,
     ShopModule,
     OrdersModule,
+    CatchesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
