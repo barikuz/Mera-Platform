@@ -9,6 +9,7 @@ import { WeatherModule } from './weather/weather.module';
 import { ShopModule } from './shop/shop.module';
 import { OrdersModule } from './orders/orders.module';
 import { CatchesModule } from './catches/catches.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CatchesModule } from './catches/catches.module';
     ProfilesModule,
     FishingSpotsModule,
     WeatherModule,
+    AiModule,
     ShopModule,
     OrdersModule,
     CatchesModule,
