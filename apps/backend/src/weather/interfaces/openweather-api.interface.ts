@@ -14,6 +14,10 @@ export interface OpenWeatherApiResponse {
   wind: {
     speed: number; // Ruzgar hizi (metric: m/s)
   };
+  weather?: Array<{
+    main?: string;
+    description?: string;
+  }>;
   cod: number; // HTTP durum kodu
   message?: string; // Hata mesaji (varsa)
 }

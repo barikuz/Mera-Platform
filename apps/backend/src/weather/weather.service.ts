@@ -35,6 +35,45 @@ export class WeatherService {
    * @throws BadGatewayException - API hatasi veya timeout durumunda
    */
   async getWeather(lat: number, lon: number): Promise<WeatherData> {
+    const data = await this.fetchWeatherData(lat, lon);
+
+    return {
+      temperature: data.temperature,
+      windSpeed: data.windSpeed,
+      pressure: data.pressure,
+      safetyWarnings: data.safetyWarnings,
+    };
+  }
+
+  async getWeatherForPrompt(
+    lat: number,
+    lon: number,
+  ): Promise<{
+    temperatureC: number;
+    windSpeedMps: number;
+    pressureHpa: number;
+    conditions: string;
+  }> {
+    const data = await this.fetchWeatherData(lat, lon);
+
+    return {
+      temperatureC: data.temperature,
+      windSpeedMps: data.windSpeed,
+      pressureHpa: data.pressure,
+      conditions: data.conditions,
+    };
+  }
+
+  private async fetchWeatherData(
+    lat: number,
+    lon: number,
+  ): Promise<{
+    temperature: number;
+    windSpeed: number;
+    pressure: number;
+    safetyWarnings: string[];
+    conditions: string;
+  }> {
     const url = `${this.baseUrl}?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`;
 
     try {
@@ -77,6 +116,7 @@ export class WeatherService {
         temperature: data.main.temp,
         windSpeed: data.wind.speed,
         pressure: data.main.pressure,
+        conditions: this.formatConditions(data),
         safetyWarnings: this.evaluateSafety(data.wind.speed, data.main.temp),
       };
     } catch (error) {
@@ -128,5 +168,12 @@ export class WeatherService {
     }
 
     return warnings;
+  }
+
+  private formatConditions(data: OpenWeatherApiResponse): string {
+    const weatherDescription = data.weather?.[0]?.description?.trim();
+    const weatherMain = data.weather?.[0]?.main?.trim();
+
+    return weatherDescription || weatherMain || 'unknown';
   }
 }
