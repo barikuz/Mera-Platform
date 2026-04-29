@@ -10,6 +10,7 @@ import { ShopModule } from './shop/shop.module';
 import { OrdersModule } from './orders/orders.module';
 import { CatchesModule } from './catches/catches.module';
 import { AiModule } from './ai/ai.module';
+import { CatalogModule } from './catalog/catalog.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AiModule } from './ai/ai.module';
     ShopModule,
     OrdersModule,
     CatchesModule,
+    CatalogModule,
   ],
   controllers: [AppController],
   providers: [AppService],
