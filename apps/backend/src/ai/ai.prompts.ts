@@ -20,6 +20,7 @@ export type PromptWeather = {
 };
 
 export type PromptGearItem = {
+  productId: string;
   urunAdi: string;
   fiyat: number;
 };
@@ -47,7 +48,12 @@ const formatSpotLines = (spots: PromptFishingSpot[]): string =>
     .join('\n');
 
 const formatGearLines = (items: PromptGearItem[]): string =>
-  items.map((item) => `- ${item.urunAdi} (Fiyat: ${item.fiyat})`).join('\n');
+  items
+    .map(
+      (item) =>
+        `- productId: ${item.productId} | ${item.urunAdi} (Fiyat: ${item.fiyat})`,
+    )
+    .join('\n');
 
 export const buildSpotRecommendationUserPrompt = (
   input: SpotRecommendationRequestDto,

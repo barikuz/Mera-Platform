@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 type ShopRecord = Record<string, unknown>;
@@ -43,5 +47,27 @@ export class ShopService {
     }
 
     return (data ?? []) as ShopRecord[];
+  }
+
+  async findActiveProductById(id: string): Promise<ShopRecord> {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .maybeSingle<ShopRecord>();
+
+    if (error) {
+      throw new InternalServerErrorException(
+        `Urun getirilirken hata oluştu: ${error.message}`,
+      );
+    }
+
+    if (!data) {
+      throw new NotFoundException(`Urun bulunamadi: ${id}`);
+    }
+
+    return data;
   }
 }

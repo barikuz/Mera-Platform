@@ -256,6 +256,7 @@ export class AiService {
       }
 
       stock[categoryKey].push({
+        productId: product.id,
         urunAdi: product.name,
         fiyat: price,
       });

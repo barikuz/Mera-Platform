@@ -57,6 +57,12 @@ export class SpotRecommendationResponseDto {
 
 export class GearRecommendationItemDto {
   @ApiProperty({
+    description: 'Urun kimligi',
+    example: 'a3f1c2d4-5b6e-7f80-91a2-b3c4d5e6f789',
+  })
+  productId!: string;
+
+  @ApiProperty({
     description: 'Kamis, Makine, Yem veya Sahte Yem olmali',
     example: 'Kamis',
   })

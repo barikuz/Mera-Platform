@@ -1,5 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ShopService } from './shop.service';
 
 @ApiTags('Mağaza (Shop)')
@@ -25,5 +31,18 @@ export class ShopController {
   @ApiResponse({ status: 200, description: 'Ürünler başarıyla getirildi.' })
   findProducts(@Query('categoryId') categoryId?: string) {
     return this.shopService.findActiveProducts(categoryId);
+  }
+
+  @Get('products/:id')
+  @ApiOperation({ summary: 'Belirli bir ürünü getirir' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Ürün kimliği',
+  })
+  @ApiResponse({ status: 200, description: 'Ürün başarıyla getirildi.' })
+  @ApiResponse({ status: 404, description: 'Ürün bulunamadı.' })
+  findProductById(@Param('id') id: string) {
+    return this.shopService.findActiveProductById(id);
   }
 }

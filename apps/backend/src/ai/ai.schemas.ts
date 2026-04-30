@@ -38,6 +38,7 @@ export const gearRecommendationResponseSchema = {
       items: {
         type: Type.OBJECT,
         properties: {
+          productId: { type: Type.STRING },
           kategori: {
             type: Type.STRING,
             description: 'Kamis, Makine, Yem veya Sahte Yem olmali.',
@@ -49,7 +50,7 @@ export const gearRecommendationResponseSchema = {
           },
           uzmanNotu: { type: Type.STRING },
         },
-        required: ['kategori', 'urunAdi', 'fiyat', 'uzmanNotu'],
+        required: ['productId', 'kategori', 'urunAdi', 'fiyat', 'uzmanNotu'],
       },
     },
   },
