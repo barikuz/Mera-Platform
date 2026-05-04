@@ -1,26 +1,34 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Font Families */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Mera Color Palette */
+  --color-mera-primary: #192655;
+  --color-mera-accent: #e1aa74;
+
+  /* Neutral Colors */
+  --color-mera-neutral-100: #f8fafc;
+  --color-mera-neutral-200: #e2e8f0;
+  --color-mera-neutral-500: #64748b;
+  --color-mera-neutral-800: #1e293b;
+  --color-mera-neutral-900: #0f172a;
+  --color-mera-neutral-950: #0f162a;
+
+  /* Status Colors */
+  --color-mera-status-success: #10b981;
+  --color-mera-status-error: #ef4444;
+  --color-mera-status-warning: #f59e0b;
+  --color-mera-status-info: #3b82f6;
+
+  /* Legacy compatibility for 'primary' and 'accent' shorthand */
+  --color-primary: var(--color-mera-primary);
+  --color-accent: var(--color-mera-accent);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-mera-neutral-100 text-mera-neutral-900 antialiased;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
