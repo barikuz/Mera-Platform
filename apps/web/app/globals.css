@@ -16,9 +16,10 @@
   --color-mera-neutral-100: #f8fafc;
   --color-mera-neutral-200: #e2e8f0;
   --color-mera-neutral-500: #64748b;
+  --color-mera-neutral-700: #334155;
   --color-mera-neutral-800: #1e293b;
   --color-mera-neutral-900: #0f172a;
-  --color-mera-neutral-950: #0f162a;
+  --color-mera-neutral-950: #0b1120;
 
   /* Status Colors */
   --color-mera-status-success: #10b981;
@@ -74,16 +75,56 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
   }
   html {
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-mera-neutral-100 text-mera-neutral-900 antialiased;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* ── Dark Mode Variable Overrides ───────────────────────── */
+  .dark {
+    /* In dark mode, the teal accent becomes the primary action color */
+    --color-primary: #00ccb2;
+    --color-primary-foreground: #0f172a;
+
+    /* Deep navy/slate backgrounds for sophistication */
+    --color-background: #0b1120;
+    --color-foreground: #f1f5f9;
+
+    /* Cards elevated above background with visible separation */
+    --color-card: #16213a;
+    --color-card-foreground: #f1f5f9;
+
+    --color-popover: #16213a;
+    --color-popover-foreground: #f1f5f9;
+
+    --color-secondary: #1e2d40;
+    --color-secondary-foreground: #94a3b8;
+
+    --color-muted: #1e2d40;
+    --color-muted-foreground: #64748b;
+
+    /* The navy brand color becomes the accent in dark mode */
+    --color-accent: #1e3a5f;
+    --color-accent-foreground: #00ccb2;
+
+    --color-border: #243554;
+    --color-input: #243554;
+    --color-ring: #00ccb2;
+
+    /* Keep mera-primary for any hardcoded references (logo) */
+    --color-mera-primary: #00ccb2;
   }
 }
 
 @utility font-comfortaa-bold {
   font-family: var(--font-comfortaa), sans-serif;
   font-weight: 700;
+}
+
+@utility logo-glow-dark {
+  text-shadow: 0 0 20px rgba(0, 204, 178, 0.6), 0 0 40px rgba(0, 204, 178, 0.2);
 }
