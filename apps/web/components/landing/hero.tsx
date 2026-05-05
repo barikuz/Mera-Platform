@@ -147,14 +147,19 @@ export function Hero() {
             <div className="absolute -bottom-6 -left-6 bg-card rounded-xl shadow-lg border border-border p-4 hidden lg:block">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-6 w-6 text-primary"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    stroke-width="2" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round" 
+                    className="lucide lucide-fishing-hook-icon lucide-fishing-hook"
                   >
-                    <path d="M6 3v18M18 3v18M6 12h12" />
+                    <path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/>
+                    <path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/>
                   </svg>
                 </div>
                 <div>

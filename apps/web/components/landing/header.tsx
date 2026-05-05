@@ -21,20 +21,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="h-5 w-5 text-primary-foreground"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-foreground tracking-tight">
+            <span className="text-2xl font-comfortaa-bold text-mera-primary tracking-wider">
               Mera
             </span>
           </Link>

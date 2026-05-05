@@ -7,6 +7,7 @@
   /* Font Families */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
+
   /* ── Mera Color Palette ──────────────────────────────────── */
   --color-mera-primary: #192655;
   --color-mera-accent: #00ccb2;
@@ -80,4 +81,9 @@
   body {
     @apply bg-mera-neutral-100 text-mera-neutral-900 antialiased;
   }
+}
+
+@utility font-comfortaa-bold {
+  font-family: var(--font-comfortaa), sans-serif;
+  font-weight: 700;
 }
