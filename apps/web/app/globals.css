@@ -1,12 +1,15 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   /* Font Families */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  /* Mera Color Palette */
+  /* ── Mera Color Palette ──────────────────────────────────── */
   --color-mera-primary: #192655;
-  --color-mera-accent: #e1aa74;
+  --color-mera-accent: #00ccb2;
 
   /* Neutral Colors */
   --color-mera-neutral-100: #f8fafc;
@@ -25,9 +28,55 @@
   /* Legacy compatibility for 'primary' and 'accent' shorthand */
   --color-primary: var(--color-mera-primary);
   --color-accent: var(--color-mera-accent);
+
+  /* ── Shadcn / UI Semantic Tokens (mapped to Mera palette) ─ */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+
+  --color-primary-foreground: #f8fafc;
+
+  --color-secondary: #e2e8f0;
+  --color-secondary-foreground: #0f172a;
+
+  --color-muted: #e2e8f0;
+  --color-muted-foreground: #64748b;
+
+  --color-accent-foreground: #192655;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #192655;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+
+  /* Chart Colors */
+  --color-chart-1: #3b82f6;
+  --color-chart-2: #10b981;
+  --color-chart-3: #192655;
+  --color-chart-4: #f59e0b;
+  --color-chart-5: #ef4444;
+
+  /* Radius Scale */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
 }
 
 @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-mera-neutral-100 text-mera-neutral-900 antialiased;
   }
