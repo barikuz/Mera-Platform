@@ -44,10 +44,14 @@ export function Header() {
           {/* Desktop CTA */}
           <div className="hidden md:flex md:items-center md:gap-2">
             <ThemeToggle />
-            <Button variant="ghost" size="sm">
-              Giriş Yap
-            </Button>
-            <Button size="sm">Ücretsiz Başla</Button>
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Giriş Yap
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Ücretsiz Başla</Button>
+            </Link>
           </div>
 
           {/* Mobile Menu */}
