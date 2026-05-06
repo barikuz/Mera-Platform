@@ -46,8 +46,9 @@ export function Hero() {
                 size="lg"
                 variant="outline"
                 className="text-base px-8 h-12"
+                asChild
               >
-                Nasıl Çalışır?
+                <a href="#how-it-works">Nasıl Çalışır?</a>
               </Button>
             </div>
 
