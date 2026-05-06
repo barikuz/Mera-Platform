@@ -14,8 +14,12 @@ const comfortaa = Comfortaa({
 });
 
 export const metadata: Metadata = {
-  title: "Mera Platform",
-  description: "Mera Balıkçılık Platformu",
+  title: {
+    default: "Mera",
+    template: "%s | Mera",
+  },
+  description:
+    "Mera, balıkçılar için yapay zeka destekli asistan ve balıkçılık ekipmanları e-ticaret platformu. Doğru noktayı bul, doğru ekipmanı seç.",
 };
 
 export default function RootLayout({

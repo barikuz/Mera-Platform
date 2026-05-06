@@ -3,8 +3,9 @@ import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Giriş Yap | Mera",
-  description: "Mera hesabınıza giriş yapın.",
+  title: "Giriş Yap",
+  description:
+    "Mera hesabınıza giriş yaparak av istatistiklerinizi kaydedin ve geçmiş performansınızı takip edin.",
 };
 
 export default function LoginPage() {
