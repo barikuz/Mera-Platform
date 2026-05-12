@@ -24,7 +24,7 @@ export function Hero() {
             </Badge>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground text-balance">
-              Akıllı Balıkçı
+              Akıllı Balıkçılık
               <span className="block text-primary">Asistanınız</span>
             </h1>
 
