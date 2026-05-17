@@ -6,6 +6,7 @@ interface PillSelectorProps {
   options: string[];
   selected: string;
   onChange: (next: string) => void;
+  error?: string;
 }
 
 export function PillSelector({
@@ -14,6 +15,7 @@ export function PillSelector({
   options,
   selected,
   onChange,
+  error,
 }: PillSelectorProps) {
   const toggle = (option: string) => {
     onChange(selected === option ? "" : option);
@@ -56,6 +58,11 @@ export function PillSelector({
           );
         })}
       </div>
+      {error && (
+        <p className="text-xs font-medium text-destructive mt-1.5 animate-in fade-in slide-in-from-top-1">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ interface LocationComboboxProps {
   onMapOpen?: () => void;
   /** Coordinates returned from the map picker modal */
   mapCoords?: LatLng | null;
+  error?: string;
 }
 
 export function LocationCombobox({
@@ -22,6 +23,7 @@ export function LocationCombobox({
   onChange,
   onMapOpen,
   mapCoords,
+  error,
 }: LocationComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -225,6 +227,11 @@ export function LocationCombobox({
           <MapPin className="h-4.5 w-4.5" />
         </button>
       </div>
+      {error && (
+        <p className="text-xs font-medium text-destructive mt-1.5 animate-in fade-in slide-in-from-top-1">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

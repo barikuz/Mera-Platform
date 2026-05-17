@@ -33,3 +33,40 @@ export interface MapInteriorProps {
   onLocateMe: () => void;
   isLocating: boolean;
 }
+
+// ─── Result Types ─────────────────────────────────────────────────────────────
+
+export interface SpotResult {
+  spotName: string;
+  waterType: string;
+  depth: string;
+  description: string;
+  coordinates: LatLng;
+}
+
+export interface EquipmentResult {
+  category: "Kamış" | "Makine" | "Yem / Sahte Yem";
+  productName: string;
+  price: number;
+  expertNote: string;
+}
+
+export interface TipResult {
+  title: string;
+  subtitle: string;
+  items: string[];
+}
+
+export type ResultStatus = "idle" | "loading" | "success" | "error";
+
+export interface FilterTag {
+  emoji: string;
+  label: string;
+}
+
+export interface MapViewModalProps {
+  isOpen: boolean;
+  coords: LatLng;
+  label: string;
+  onClose: () => void;
+}
