@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { SubmitButton } from "../submit-button";
 import { useAssistantForm } from "@/hooks/use-assistant-form";
 import { PillSelector } from "../pill-selector";
 import { LocationCombobox } from "../location-combobox";
 import { MapPickerModal } from "../map-picker-modal";
 import { EquipmentResultsSection } from "../results/equipment-results-section";
-import { FISH_SPECIES, FISHING_SPOTS, FISHING_STYLES, ELAZIG_CENTER } from "@/constants/assistant";
+import { ELAZIG_CENTER } from "@/constants/assistant";
 import { LatLng, FilterTag, EquipmentResult } from "@/types/assistant";
-import { fetchGearRecommendation, GearRecommendationRequest } from "@/lib/assistant-api";
+import { fetchGearRecommendation, GearRecommendationRequest, fetchFishingSpots, fetchFishSpecies, fetchFishingStyles } from "@/lib/assistant-api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function GearRecommendationForm() {
   const {
@@ -30,7 +31,28 @@ export function GearRecommendationForm() {
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapCoords, setMapCoords] = useState<LatLng | null>(null);
 
-  const [submittedTags, setSubmittedTags] = useState<FilterTag[]>([]);
+  const { data: fishingSpots = [], isLoading: isLoadingSpots } = useQuery({
+    queryKey: ["fishingSpots"],
+    queryFn: fetchFishingSpots,
+  });
+
+  const { data: fishSpecies = [], isLoading: isLoadingSpecies } = useQuery({
+    queryKey: ["fishSpecies"],
+    queryFn: fetchFishSpecies,
+  });
+
+  const { data: fishingStyles = [], isLoading: isLoadingStyles } = useQuery({
+    queryKey: ["fishingStyles"],
+    queryFn: fetchFishingStyles,
+  });
+
+  const queryClient = useQueryClient();
+  const { data: submittedTags = [] } = useQuery<FilterTag[]>({
+    queryKey: ["submittedTags", "gear"],
+    queryFn: () => [],
+    enabled: false,
+    staleTime: Infinity,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleMapSave = useCallback((coords: LatLng) => {
@@ -47,7 +69,7 @@ export function GearRecommendationForm() {
       tags.push({ emoji: "🐟", label: selectedSpecies });
     }
 
-    const spot = FISHING_SPOTS.find((s) => s.id === selectedLocation);
+    const spot = fishingSpots.find((s) => s.id === selectedLocation);
 
     if (spot) {
       tags.push({ emoji: "📍", label: spot.label });
@@ -63,7 +85,7 @@ export function GearRecommendationForm() {
       tags.push({ emoji: "🎣", label: selectedStyles });
     }
     return tags;
-  }, [selectedSpecies, selectedLocation, mapCoords, selectedStyles]);
+  }, [selectedSpecies, selectedLocation, mapCoords, selectedStyles, fishingSpots]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -79,14 +101,15 @@ export function GearRecommendationForm() {
     e.preventDefault();
     if (!validate()) return;
     
-    const coordinates = mapCoords ?? ELAZIG_CENTER; 
+    const spot = fishingSpots.find((s) => s.id === selectedLocation);
+    const coordinates = mapCoords ?? (spot?.lat && spot?.lng ? { lat: spot.lat, lng: spot.lng } : ELAZIG_CENTER); 
     
     submitForm({
       targetFish: selectedSpecies,
       coordinates,
       fishingStyle: selectedStyles
     });
-    setSubmittedTags(filterTags);
+    queryClient.setQueryData(["submittedTags", "gear"], filterTags);
   };
 
 
@@ -96,18 +119,19 @@ export function GearRecommendationForm() {
         <div className="space-y-6">
           <PillSelector
             id="equipment-species"
-            label="Hedef Balık Türü"
-            options={FISH_SPECIES}
+            label="Hedef Balık"
+            options={fishSpecies}
             selected={selectedSpecies}
             onChange={(val) => {
               setSelectedSpecies(val);
-              if (val) setErrors((prev) => ({ ...prev, species: "" }));
+              setErrors((prev) => ({ ...prev, species: "" }));
             }}
             error={errors.species}
+            isLoading={isLoadingSpecies}
           />
           <LocationCombobox
             id="equipment-location"
-            options={FISHING_SPOTS}
+            options={fishingSpots}
             selected={selectedLocation}
             onChange={(val) => {
               setSelectedLocation(val);
@@ -119,17 +143,19 @@ export function GearRecommendationForm() {
             onMapOpen={() => setIsMapOpen(true)}
             mapCoords={mapCoords}
             error={errors.location}
+            isLoading={isLoadingSpots}
           />
           <PillSelector
             id="equipment-style"
             label="Avlanma Stili"
-            options={FISHING_STYLES}
+            options={fishingStyles}
             selected={selectedStyles}
             onChange={(val) => {
               setSelectedStyles(val);
-              if (val) setErrors((prev) => ({ ...prev, style: "" }));
+              setErrors((prev) => ({ ...prev, style: "" }));
             }}
             error={errors.style}
+            isLoading={isLoadingStyles}
           />
         </div>
 

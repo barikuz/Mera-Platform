@@ -23,7 +23,7 @@ const ITEM_ICONS: Record<string, LucideIcon> = {
 // Icon + title, highlighted subtitle, bullet-point list with check icons.
 
 export function TipResultCard({ result }: TipResultCardProps) {
-  const HeaderIcon = HEADER_ICONS[result.title];
+  const HeaderIcon = HEADER_ICONS[result.title] ?? Lightbulb;
   const BulletIcon = ITEM_ICONS[result.title] ?? CheckCircle;
 
   // Render "Location Selection" / "Konum Stratejisi" as a single highlighted paragraph

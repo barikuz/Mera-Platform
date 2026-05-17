@@ -31,3 +31,18 @@ export function FullScreenSpinner() {
     </div>
   );
 }
+
+export function InlineLoader({
+  text = "Yükleniyor...",
+  className,
+}: {
+  text?: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex items-center gap-2 text-sm text-muted-foreground animate-in fade-in", className)}>
+      <Spinner size="sm" className="flex-shrink-0" />
+      <span className="truncate">{text}</span>
+    </div>
+  );
+}

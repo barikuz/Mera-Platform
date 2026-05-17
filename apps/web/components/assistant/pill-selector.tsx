@@ -1,5 +1,7 @@
 "use client";
 
+import { InlineLoader } from "@/components/ui/spinner";
+
 interface PillSelectorProps {
   id: string;
   label: string;
@@ -7,6 +9,7 @@ interface PillSelectorProps {
   selected: string;
   onChange: (next: string) => void;
   error?: string;
+  isLoading?: boolean;
 }
 
 export function PillSelector({
@@ -16,6 +19,7 @@ export function PillSelector({
   selected,
   onChange,
   error,
+  isLoading,
 }: PillSelectorProps) {
   const toggle = (option: string) => {
     onChange(selected === option ? "" : option);
@@ -32,11 +36,14 @@ export function PillSelector({
       <div
         role="group"
         aria-labelledby={`${id}-label`}
-        className="flex flex-wrap gap-2"
+        className="flex flex-wrap gap-2 min-h-[32px]"
       >
-        {options.map((option) => {
-          const isSelected = selected === option;
-          return (
+        {isLoading ? (
+          <InlineLoader className="py-1" />
+        ) : (
+          options.map((option) => {
+            const isSelected = selected === option;
+            return (
             <button
               key={option}
               type="button"
@@ -56,7 +63,8 @@ export function PillSelector({
               {option}
             </button>
           );
-        })}
+          })
+        )}
       </div>
       {error && (
         <p className="text-xs font-medium text-destructive mt-1.5 animate-in fade-in slide-in-from-top-1">

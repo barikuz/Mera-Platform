@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MapPin, ChevronDown, X, Search } from "lucide-react";
 import { FishingSpot, LatLng } from "@/types/assistant";
+import { InlineLoader } from "@/components/ui/spinner";
 
 interface LocationComboboxProps {
   id: string;
@@ -14,6 +15,7 @@ interface LocationComboboxProps {
   /** Coordinates returned from the map picker modal */
   mapCoords?: LatLng | null;
   error?: string;
+  isLoading?: boolean;
 }
 
 export function LocationCombobox({
@@ -24,6 +26,7 @@ export function LocationCombobox({
   onMapOpen,
   mapCoords,
   error,
+  isLoading,
 }: LocationComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -88,25 +91,32 @@ export function LocationCombobox({
             aria-haspopup="listbox"
             aria-expanded={open}
             aria-controls={`${id}-listbox`}
+            disabled={isLoading}
             className={`
               w-full flex items-center justify-between gap-2 h-10 px-3.5 rounded-lg
               border border-border bg-card dark:bg-mera-neutral-800/60
               text-sm transition-all duration-150 cursor-pointer
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
-              hover:border-primary/40 dark:hover:border-primary/40
+              hover:border-primary/40 dark:hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-70
               ${open ? "border-primary ring-2 ring-ring/30" : ""}
             `}
           >
             <div className="flex items-center gap-2 min-w-0">
-              <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              {mapCoords ? (
-                <span className="text-foreground truncate">
-                  {mapCoords.lat.toFixed(5)}, {mapCoords.lng.toFixed(5)}
-                </span>
-              ) : selectedSpot ? (
-                <span className="text-foreground truncate">{selectedSpot.label}</span>
+              {isLoading ? (
+                <InlineLoader />
               ) : (
-                <span className="text-muted-foreground">Bir nokta seçin...</span>
+                <>
+                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  {mapCoords ? (
+                    <span className="text-foreground truncate">
+                      {mapCoords.lat.toFixed(5)}, {mapCoords.lng.toFixed(5)}
+                    </span>
+                  ) : selectedSpot ? (
+                    <span className="text-foreground truncate">{selectedSpot.label}</span>
+                  ) : (
+                    <span className="text-muted-foreground">Bir nokta seçin...</span>
+                  )}
+                </>
               )}
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">

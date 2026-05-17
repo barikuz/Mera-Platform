@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { SubmitButton } from "../submit-button";
 import { useAssistantForm } from "@/hooks/use-assistant-form";
 import { PillSelector } from "../pill-selector";
@@ -8,9 +8,10 @@ import { LocationCombobox } from "../location-combobox";
 import { MapPickerModal } from "../map-picker-modal";
 import { MapViewModal } from "../map-view-modal";
 import { SpotResultsSection } from "../results/spot-results-section";
-import { FISH_SPECIES, FISHING_SPOTS, ELAZIG_CENTER } from "@/constants/assistant";
+import { ELAZIG_CENTER } from "@/constants/assistant";
 import { LatLng, SpotResult, FilterTag } from "@/types/assistant";
-import { fetchSpotRecommendation, SpotRecommendationRequest } from "@/lib/assistant-api";
+import { fetchSpotRecommendation, SpotRecommendationRequest, fetchFishingSpots, fetchFishSpecies } from "@/lib/assistant-api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function SpotRecommendationForm() {
   const {
@@ -29,6 +30,16 @@ export function SpotRecommendationForm() {
 
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapCoords, setMapCoords] = useState<LatLng | null>(null);
+
+  const { data: fishingSpots = [], isLoading: isLoadingSpots } = useQuery({
+    queryKey: ["fishingSpots"],
+    queryFn: fetchFishingSpots,
+  });
+
+  const { data: fishSpecies = [], isLoading: isLoadingSpecies } = useQuery({
+    queryKey: ["fishSpecies"],
+    queryFn: fetchFishSpecies,
+  });
 
   // Read-only map view state
   const [mapViewResult, setMapViewResult] = useState<SpotResult | null>(null);
@@ -55,7 +66,7 @@ export function SpotRecommendationForm() {
       tags.push({ emoji: "🐟", label: selectedSpecies });
     }
 
-    const spot = FISHING_SPOTS.find((s) => s.id === selectedLocation);
+    const spot = fishingSpots.find((s) => s.id === selectedLocation);
 
     if (spot) {
       tags.push({ emoji: "📍", label: spot.label });
@@ -67,9 +78,15 @@ export function SpotRecommendationForm() {
       });
     }
     return tags;
-  }, [selectedSpecies, selectedLocation, mapCoords]);
+  }, [selectedSpecies, selectedLocation, mapCoords, fishingSpots]);
 
-  const [submittedTags, setSubmittedTags] = useState<FilterTag[]>([]);
+  const queryClient = useQueryClient();
+  const { data: submittedTags = [] } = useQuery<FilterTag[]>({
+    queryKey: ["submittedTags", "spot"],
+    queryFn: () => [],
+    enabled: false,
+    staleTime: Infinity,
+  });
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -84,15 +101,15 @@ export function SpotRecommendationForm() {
     e.preventDefault();
     if (!validate()) return;
     
-    const spot = FISHING_SPOTS.find((s) => s.id === selectedLocation);
-    // Use map coords if available, otherwise fallback to a generic center for the selected region (in real app, we'd lookup coordinates of the spot)
-    const coordinates = mapCoords ?? ELAZIG_CENTER; 
+    const spot = fishingSpots.find((s) => s.id === selectedLocation);
+    // Use map coords if available, otherwise fallback to the selected spot's coordinates or generic center
+    const coordinates = mapCoords ?? (spot?.lat && spot?.lng ? { lat: spot.lat, lng: spot.lng } : ELAZIG_CENTER); 
     
     submitForm({
       targetFish: selectedSpecies,
       coordinates,
     });
-    setSubmittedTags(filterTags);
+    queryClient.setQueryData(["submittedTags", "spot"], filterTags);
   };
 
   return (
@@ -101,22 +118,22 @@ export function SpotRecommendationForm() {
         <div className="space-y-6">
           <PillSelector
             id="recommendation-species"
-            label="Hedef Balık Türü"
-            options={FISH_SPECIES}
+            label="Hedef Balık"
+            options={fishSpecies}
             selected={selectedSpecies}
             onChange={(val) => {
               setSelectedSpecies(val);
               if (val) setErrors((prev) => ({ ...prev, species: "" }));
             }}
             error={errors.species}
+            isLoading={isLoadingSpecies}
           />
           <LocationCombobox
             id="recommendation-location"
-            options={FISHING_SPOTS}
+            options={fishingSpots}
             selected={selectedLocation}
             onChange={(val) => {
               setSelectedLocation(val);
-              // Clear map coords when user picks from dropdown
               if (val) {
                 setMapCoords(null);
                 setErrors((prev) => ({ ...prev, location: "" }));
@@ -125,6 +142,7 @@ export function SpotRecommendationForm() {
             onMapOpen={() => setIsMapOpen(true)}
             mapCoords={mapCoords}
             error={errors.location}
+            isLoading={isLoadingSpots}
           />
         </div>
 

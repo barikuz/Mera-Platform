@@ -50,12 +50,6 @@ export const FISHING_STYLES = [
   "Jigging",
 ];
 
-export const FISHING_SPOTS: FishingSpot[] = [
-  { id: "1", label: "Bosphorus — İstanbul", region: "Marmara" },
-  { id: "2", label: "Erdek Körfezi — Balıkesir", region: "Marmara" },
-  { id: "3", label: "Çeşme Yarımadası — İzmir", region: "Ege" },
-  { id: "4", label: "Antalya Körfezi — Antalya", region: "Akdeniz" },
-];
 
 export const ELAZIG_CENTER: LatLng = { lat: 38.6748, lng: 39.2226 };
 export const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";

@@ -13,6 +13,8 @@ export interface FishingSpot {
   id: string;
   label: string;
   region: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface LatLng {

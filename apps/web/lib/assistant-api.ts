@@ -1,4 +1,4 @@
-import { SpotResult, EquipmentResult, TipResult } from "@/types/assistant";
+import { SpotResult, EquipmentResult, TipResult, FishingSpot } from "@/types/assistant";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
@@ -111,4 +111,48 @@ export async function fetchTechnicalTips(
     subtitle: item.altBaslik || "",
     items: item.maddeler || [],
   }));
+}
+
+export interface ApiFishingSpot {
+  id: string;
+  name: string;
+  water_type: string;
+  center_lat: number;
+  center_lng: number;
+}
+
+export async function fetchFishingSpots(): Promise<FishingSpot[]> {
+  const response = await fetch(`${API_BASE}/fishing-spots`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch fishing spots");
+  }
+
+  const data = await response.json();
+  const rawSpots: ApiFishingSpot[] = data.data || [];
+
+  return rawSpots.map((spot) => ({
+    id: spot.id,
+    label: spot.name,
+    region: spot.water_type,
+    lat: spot.center_lat,
+    lng: spot.center_lng,
+  }));
+}
+
+export async function fetchFishSpecies(): Promise<string[]> {
+  const response = await fetch(`${API_BASE}/catalog/fish-species`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch fish species");
+  }
+  const data = await response.json();
+  return (data || []).map((item: { id: string; name: string }) => item.name);
+}
+
+export async function fetchFishingStyles(): Promise<string[]> {
+  const response = await fetch(`${API_BASE}/catalog/fishing-styles`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch fishing styles");
+  }
+  const data = await response.json();
+  return (data || []).map((item: { id: string; name: string }) => item.name);
 }

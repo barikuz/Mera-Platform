@@ -1,11 +1,14 @@
 import { useState, useCallback, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { ResultStatus } from "@/types/assistant";
 
 export function useAssistantForm<TResult, TPayload>(
   formName: string,
   mutationFn: (payload: TPayload) => Promise<TResult[]>
 ) {
+  const queryClient = useQueryClient();
+  const queryKey = ["assistantResult", formName];
+
   const [selectedSpecies, setSelectedSpecies] = useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   
@@ -14,12 +17,21 @@ export function useAssistantForm<TResult, TPayload>(
 
   const mutation = useMutation({
     mutationFn,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKey, data);
       console.log(`[${formName}] Başarıyla sonuçlar alındı.`);
     },
     onError: (error) => {
       console.error(`[${formName}] Hata:`, error);
     },
+  });
+
+  // Read persisted results from query cache
+  const { data: cachedResults } = useQuery({
+    queryKey,
+    queryFn: () => [] as TResult[], // dummy, never fetches
+    enabled: false,
+    staleTime: Infinity,
   });
 
   const submitForm = useCallback(
@@ -44,7 +56,11 @@ export function useAssistantForm<TResult, TPayload>(
     resultStatus = "error";
   } else if (mutation.isSuccess) {
     resultStatus = "success";
+  } else if (cachedResults && (cachedResults as TResult[]).length > 0) {
+    resultStatus = "success"; // Restored from cache!
   }
+
+  const results = mutation.data ?? (cachedResults as TResult[]) ?? [];
 
   return {
     selectedSpecies,
@@ -52,7 +68,7 @@ export function useAssistantForm<TResult, TPayload>(
     selectedLocation,
     setSelectedLocation,
     resultStatus,
-    results: mutation.data ?? [],
+    results,
     submitForm,
     handleRetry,
   };

@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { SubmitButton } from "../submit-button";
 import { useAssistantForm } from "@/hooks/use-assistant-form";
 import { PillSelector } from "../pill-selector";
 import { LocationCombobox } from "../location-combobox";
 import { MapPickerModal } from "../map-picker-modal";
 import { TipResultsSection } from "../results/tip-results-section";
-import { FISH_SPECIES, FISHING_SPOTS, ELAZIG_CENTER } from "@/constants/assistant";
+import { ELAZIG_CENTER } from "@/constants/assistant";
 import { LatLng, FilterTag, TipResult } from "@/types/assistant";
-import { fetchTechnicalTips, TechnicalTipsRequest } from "@/lib/assistant-api";
+import { fetchTechnicalTips, TechnicalTipsRequest, fetchFishingSpots, fetchFishSpecies } from "@/lib/assistant-api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function TechnicalTipsForm() {
   const {
@@ -30,6 +31,16 @@ export function TechnicalTipsForm() {
   const [mapCoords, setMapCoords] = useState<LatLng | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const { data: fishingSpots = [], isLoading: isLoadingSpots } = useQuery({
+    queryKey: ["fishingSpots"],
+    queryFn: fetchFishingSpots,
+  });
+
+  const { data: fishSpecies = [], isLoading: isLoadingSpecies } = useQuery({
+    queryKey: ["fishSpecies"],
+    queryFn: fetchFishSpecies,
+  });
+
   const handleMapSave = useCallback((coords: LatLng) => {
     setMapCoords(coords);
     setIsMapOpen(false);
@@ -45,7 +56,7 @@ export function TechnicalTipsForm() {
       tags.push({ emoji: "🐟", label: selectedSpecies });
     }
     
-    const spot = FISHING_SPOTS.find((s) => s.id === selectedLocation);
+    const spot = fishingSpots.find((s) => s.id === selectedLocation);
 
     if (spot) {
       tags.push({ emoji: "📍", label: spot.label });
@@ -57,9 +68,15 @@ export function TechnicalTipsForm() {
       });
     }
     return tags;
-  }, [selectedSpecies, selectedLocation, mapCoords]);
+  }, [selectedSpecies, selectedLocation, mapCoords, fishingSpots]);
 
-  const [submittedTags, setSubmittedTags] = useState<FilterTag[]>([]);
+  const queryClient = useQueryClient();
+  const { data: submittedTags = [] } = useQuery<FilterTag[]>({
+    queryKey: ["submittedTags", "tips"],
+    queryFn: () => [],
+    enabled: false,
+    staleTime: Infinity,
+  });
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -74,13 +91,14 @@ export function TechnicalTipsForm() {
     e.preventDefault();
     if (!validate()) return;
     
-    const coordinates = mapCoords ?? ELAZIG_CENTER; 
+    const spot = fishingSpots.find((s) => s.id === selectedLocation);
+    const coordinates = mapCoords ?? (spot?.lat && spot?.lng ? { lat: spot.lat, lng: spot.lng } : ELAZIG_CENTER); 
     
     submitForm({
       targetFish: selectedSpecies,
       coordinates
     });
-    setSubmittedTags(filterTags);
+    queryClient.setQueryData(["submittedTags", "tips"], filterTags);
   };
 
   return (
@@ -89,18 +107,19 @@ export function TechnicalTipsForm() {
         <div className="space-y-6">
           <PillSelector
             id="tips-species"
-            label="Hedef Balık Türü"
-            options={FISH_SPECIES}
+            label="Hedef Balık"
+            options={fishSpecies}
             selected={selectedSpecies}
             onChange={(val) => {
               setSelectedSpecies(val);
-              if (val) setErrors((prev) => ({ ...prev, species: "" }));
+              setErrors((prev) => ({ ...prev, species: "" }));
             }}
             error={errors.species}
+            isLoading={isLoadingSpecies}
           />
           <LocationCombobox
             id="tips-location"
-            options={FISHING_SPOTS}
+            options={fishingSpots}
             selected={selectedLocation}
             onChange={(val) => {
               setSelectedLocation(val);
@@ -112,6 +131,7 @@ export function TechnicalTipsForm() {
             onMapOpen={() => setIsMapOpen(true)}
             mapCoords={mapCoords}
             error={errors.location}
+            isLoading={isLoadingSpots}
           />
         </div>
 
