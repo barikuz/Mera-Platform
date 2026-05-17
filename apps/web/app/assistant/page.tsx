@@ -5,9 +5,9 @@ import { Sparkles } from "lucide-react";
 import { Header } from "@/components/landing/header";
 import { AssistantTabs } from "@/components/assistant/assistant-tabs";
 import { TabPanel } from "@/components/assistant/tab-panel";
-import { RecommendationForm } from "@/components/assistant/forms/recommendation-form";
-import { EquipmentForm } from "@/components/assistant/forms/equipment-form";
-import { TipsForm } from "@/components/assistant/forms/tips-form";
+import { SpotRecommendationForm } from "@/components/assistant/forms/spot-recommendation-form";
+import { GearRecommendationForm } from "@/components/assistant/forms/gear-recommendation-form";
+import { TechnicalTipsForm } from "@/components/assistant/forms/technical-tips-form";
 import { TABS } from "@/constants/assistant";
 import { TabId } from "@/types/assistant";
 
@@ -35,15 +35,15 @@ export default function AssistantPage() {
         <AssistantTabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
 
         <TabPanel tabId="recommendation" activeTab={activeTab}>
-          <RecommendationForm />
+          <SpotRecommendationForm />
         </TabPanel>
 
         <TabPanel tabId="equipment" activeTab={activeTab}>
-          <EquipmentForm />
+          <GearRecommendationForm />
         </TabPanel>
 
         <TabPanel tabId="tips" activeTab={activeTab}>
-          <TipsForm />
+          <TechnicalTipsForm />
         </TabPanel>
       </main>
     </div>

@@ -45,6 +45,7 @@ export interface SpotResult {
 }
 
 export interface EquipmentResult {
+  productId?: string;
   category: "Kamış" | "Makine" | "Yem / Sahte Yem";
   productName: string;
   price: number;

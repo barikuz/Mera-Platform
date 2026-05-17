@@ -8,22 +8,24 @@ import { LocationCombobox } from "../location-combobox";
 import { MapPickerModal } from "../map-picker-modal";
 import { MapViewModal } from "../map-view-modal";
 import { SpotResultsSection } from "../results/spot-results-section";
-import { FISH_SPECIES, FISHING_SPOTS } from "@/constants/assistant";
-import { MOCK_SPOT_RESULTS } from "@/constants/assistant-results";
+import { FISH_SPECIES, FISHING_SPOTS, ELAZIG_CENTER } from "@/constants/assistant";
 import { LatLng, SpotResult, FilterTag } from "@/types/assistant";
+import { fetchSpotRecommendation, SpotRecommendationRequest } from "@/lib/assistant-api";
 
-export function RecommendationForm() {
+export function SpotRecommendationForm() {
   const {
     selectedSpecies,
     setSelectedSpecies,
     selectedLocation,
     setSelectedLocation,
     resultStatus,
-    simulateError,
-    toggleSimulateError,
-    handleFormSubmit,
+    results,
+    submitForm,
     handleRetry,
-  } = useAssistantForm("Mera Önerisi");
+  } = useAssistantForm<SpotResult, SpotRecommendationRequest>(
+    "Mera Önerisi",
+    fetchSpotRecommendation
+  );
 
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapCoords, setMapCoords] = useState<LatLng | null>(null);
@@ -82,7 +84,14 @@ export function RecommendationForm() {
     e.preventDefault();
     if (!validate()) return;
     
-    handleFormSubmit(e, { mapCoords });
+    const spot = FISHING_SPOTS.find((s) => s.id === selectedLocation);
+    // Use map coords if available, otherwise fallback to a generic center for the selected region (in real app, we'd lookup coordinates of the spot)
+    const coordinates = mapCoords ?? ELAZIG_CENTER; 
+    
+    submitForm({
+      targetFish: selectedSpecies,
+      coordinates,
+    });
     setSubmittedTags(filterTags);
   };
 
@@ -119,25 +128,15 @@ export function RecommendationForm() {
           />
         </div>
 
-        {/* Error simulation toggle (dev helper) */}
         <div className="flex items-center gap-2">
           <SubmitButton label="Akıllı Öneri Al" />
         </div>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={simulateError}
-            onChange={toggleSimulateError}
-            className="rounded border-border"
-          />
-          Hata simülasyonu
-        </label>
       </form>
 
       {/* Results section — appears after submit */}
       <SpotResultsSection
         status={resultStatus}
-        results={MOCK_SPOT_RESULTS}
+        results={results}
         filterTags={submittedTags}
         onRetry={handleRetry}
         onShowMap={handleShowMap}

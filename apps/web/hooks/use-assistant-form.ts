@@ -1,51 +1,50 @@
 import { useState, useCallback, useRef } from "react";
-import { FISHING_SPOTS } from "@/constants/assistant";
+import { useMutation } from "@tanstack/react-query";
 import { ResultStatus } from "@/types/assistant";
 
-const LOADING_DURATION_MS = 1500;
-
-export function useAssistantForm(formName: string) {
+export function useAssistantForm<TResult, TPayload>(
+  formName: string,
+  mutationFn: (payload: TPayload) => Promise<TResult[]>
+) {
   const [selectedSpecies, setSelectedSpecies] = useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
-  const [resultStatus, setResultStatus] = useState<ResultStatus>("idle");
-  const [simulateError, setSimulateError] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Keep track of the last payload for retrying
+  const lastPayloadRef = useRef<TPayload | null>(null);
 
-  const getCommonData = () => ({
-    targetSpecies: selectedSpecies,
-    location: FISHING_SPOTS.find((s) => s.id === selectedLocation) ?? null,
+  const mutation = useMutation({
+    mutationFn,
+    onSuccess: () => {
+      console.log(`[${formName}] Başarıyla sonuçlar alındı.`);
+    },
+    onError: (error) => {
+      console.error(`[${formName}] Hata:`, error);
+    },
   });
 
-  // Simulate the loading → success/error lifecycle
-  const startResultCycle = useCallback(() => {
-    // Clear any pending timer from a previous cycle
-    if (timerRef.current) clearTimeout(timerRef.current);
-
-    setResultStatus("loading");
-    timerRef.current = setTimeout(() => {
-      setResultStatus(simulateError ? "error" : "success");
-    }, LOADING_DURATION_MS);
-  }, [simulateError]);
-
-  const handleFormSubmit = (
-    e: React.FormEvent,
-    additionalData: Record<string, unknown> = {}
-  ) => {
-    e.preventDefault();
-    console.log(`[${formName}] Form değerleri:`, {
-      ...getCommonData(),
-      ...additionalData,
-    });
-    startResultCycle();
-  };
+  const submitForm = useCallback(
+    (payload: TPayload) => {
+      lastPayloadRef.current = payload;
+      mutation.mutate(payload);
+    },
+    [mutation]
+  );
 
   const handleRetry = useCallback(() => {
-    startResultCycle();
-  }, [startResultCycle]);
+    if (lastPayloadRef.current) {
+      mutation.mutate(lastPayloadRef.current);
+    }
+  }, [mutation]);
 
-  const toggleSimulateError = useCallback(() => {
-    setSimulateError((prev) => !prev);
-  }, []);
+  // Derive status
+  let resultStatus: ResultStatus = "idle";
+  if (mutation.isPending) {
+    resultStatus = "loading";
+  } else if (mutation.isError) {
+    resultStatus = "error";
+  } else if (mutation.isSuccess) {
+    resultStatus = "success";
+  }
 
   return {
     selectedSpecies,
@@ -53,9 +52,8 @@ export function useAssistantForm(formName: string) {
     selectedLocation,
     setSelectedLocation,
     resultStatus,
-    simulateError,
-    toggleSimulateError,
-    handleFormSubmit,
+    results: mutation.data ?? [],
+    submitForm,
     handleRetry,
   };
 }

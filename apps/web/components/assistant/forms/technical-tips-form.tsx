@@ -6,29 +6,28 @@ import { useAssistantForm } from "@/hooks/use-assistant-form";
 import { PillSelector } from "../pill-selector";
 import { LocationCombobox } from "../location-combobox";
 import { MapPickerModal } from "../map-picker-modal";
-import { EquipmentResultsSection } from "../results/equipment-results-section";
-import { FISH_SPECIES, FISHING_SPOTS, FISHING_STYLES } from "@/constants/assistant";
-import { MOCK_EQUIPMENT_RESULTS } from "@/constants/assistant-results";
-import { LatLng, FilterTag } from "@/types/assistant";
+import { TipResultsSection } from "../results/tip-results-section";
+import { FISH_SPECIES, FISHING_SPOTS, ELAZIG_CENTER } from "@/constants/assistant";
+import { LatLng, FilterTag, TipResult } from "@/types/assistant";
+import { fetchTechnicalTips, TechnicalTipsRequest } from "@/lib/assistant-api";
 
-export function EquipmentForm() {
+export function TechnicalTipsForm() {
   const {
     selectedSpecies,
     setSelectedSpecies,
     selectedLocation,
     setSelectedLocation,
     resultStatus,
-    simulateError,
-    toggleSimulateError,
-    handleFormSubmit,
+    results,
+    submitForm,
     handleRetry,
-  } = useAssistantForm("Ekipman Tavsiyesi");
+  } = useAssistantForm<TipResult, TechnicalTipsRequest>(
+    "Teknik İpuçları",
+    fetchTechnicalTips
+  );
 
-  const [selectedStyles, setSelectedStyles] = useState<string>("");
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapCoords, setMapCoords] = useState<LatLng | null>(null);
-
-  const [submittedTags, setSubmittedTags] = useState<FilterTag[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleMapSave = useCallback((coords: LatLng) => {
@@ -41,10 +40,11 @@ export function EquipmentForm() {
   // Build filter tags from current form selections
   const filterTags = useMemo<FilterTag[]>(() => {
     const tags: FilterTag[] = [];
+
     if (selectedSpecies) {
       tags.push({ emoji: "🐟", label: selectedSpecies });
     }
-
+    
     const spot = FISHING_SPOTS.find((s) => s.id === selectedLocation);
 
     if (spot) {
@@ -56,18 +56,15 @@ export function EquipmentForm() {
         label: `Koordinat (${mapCoords.lat.toFixed(4)}, ${mapCoords.lng.toFixed(4)})`,
       });
     }
-    
-    if (selectedStyles) {
-      tags.push({ emoji: "🎣", label: selectedStyles });
-    }
     return tags;
-  }, [selectedSpecies, selectedLocation, mapCoords, selectedStyles]);
+  }, [selectedSpecies, selectedLocation, mapCoords]);
+
+  const [submittedTags, setSubmittedTags] = useState<FilterTag[]>([]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!selectedSpecies) newErrors.species = "Lütfen bu alanı boş bırakmayın.";
     if (!selectedLocation && !mapCoords) newErrors.location = "Lütfen bu alanı boş bırakmayın.";
-    if (!selectedStyles) newErrors.style = "Lütfen bu alanı boş bırakmayın.";
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -77,17 +74,21 @@ export function EquipmentForm() {
     e.preventDefault();
     if (!validate()) return;
     
-    handleFormSubmit(e, { fishingStyles: selectedStyles, mapCoords });
+    const coordinates = mapCoords ?? ELAZIG_CENTER; 
+    
+    submitForm({
+      targetFish: selectedSpecies,
+      coordinates
+    });
     setSubmittedTags(filterTags);
   };
-
 
   return (
     <>
       <form onSubmit={onSubmit} className="space-y-8" noValidate>
         <div className="space-y-6">
           <PillSelector
-            id="equipment-species"
+            id="tips-species"
             label="Hedef Balık Türü"
             options={FISH_SPECIES}
             selected={selectedSpecies}
@@ -98,7 +99,7 @@ export function EquipmentForm() {
             error={errors.species}
           />
           <LocationCombobox
-            id="equipment-location"
+            id="tips-location"
             options={FISHING_SPOTS}
             selected={selectedLocation}
             onChange={(val) => {
@@ -112,35 +113,15 @@ export function EquipmentForm() {
             mapCoords={mapCoords}
             error={errors.location}
           />
-          <PillSelector
-            id="equipment-style"
-            label="Avlanma Stili"
-            options={FISHING_STYLES}
-            selected={selectedStyles}
-            onChange={(val) => {
-              setSelectedStyles(val);
-              if (val) setErrors((prev) => ({ ...prev, style: "" }));
-            }}
-            error={errors.style}
-          />
         </div>
 
-        <SubmitButton label="Kombinasyon Önerisi Al" />
-        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={simulateError}
-            onChange={toggleSimulateError}
-            className="rounded border-border"
-          />
-          Hata simülasyonu
-        </label>
+        <SubmitButton label="Taktikleri Gör" />
       </form>
 
       {/* Results section */}
-      <EquipmentResultsSection
+      <TipResultsSection
         status={resultStatus}
-        results={MOCK_EQUIPMENT_RESULTS}
+        results={results}
         filterTags={submittedTags}
         onRetry={handleRetry}
       />

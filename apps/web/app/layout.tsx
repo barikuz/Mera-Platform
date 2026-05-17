@@ -22,6 +22,8 @@ export const metadata: Metadata = {
     "Mera, balıkçılar için yapay zeka destekli asistan ve balıkçılık ekipmanları e-ticaret platformu. Doğru noktayı bul, doğru ekipmanı seç.",
 };
 
+import { QueryProvider } from "@/components/query-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,7 +50,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${comfortaa.variable} font-sans antialiased`}>
-        {children}
+        <QueryProvider>
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );
