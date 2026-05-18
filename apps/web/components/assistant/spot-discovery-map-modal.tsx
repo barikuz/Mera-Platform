@@ -1,6 +1,7 @@
+/// <reference types="@types/google.maps" />
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { X, MapPin } from "lucide-react";
 import {
   APIProvider,
@@ -8,28 +9,33 @@ import {
   AdvancedMarker,
   Pin,
   useMap,
+  MapMouseEvent,
 } from "@vis.gl/react-google-maps";
-import { MapViewModalProps, LatLng } from "@/types/assistant";
-import { MAPS_API_KEY } from "@/constants/assistant";
+import {
+  SpotDiscoveryMapModalProps,
+  FishingSpot,
+  LatLng,
+} from "@/types/assistant";
+import { ELAZIG_CENTER, MAPS_API_KEY } from "@/constants/assistant";
+import { SpotMarkerPopup } from "./spot-marker-popup";
 
-// ─── Inner map component (read-only, no click handler) ────────────────────────
+const BRAND_PIN_PROPS = {
+  background: "var(--color-mera-primary)",
+  borderColor: "var(--color-mera-primary)",
+  glyphColor: "var(--color-mera-primary)",
+} as const;
 
-function ReadOnlyMapInterior({ coords }: { coords: LatLng }) {
-  const map = useMap();
+function useMapColorScheme() {
   const [isDark, setIsDark] = useState(false);
 
-  // Sync theme with document root class
   useEffect(() => {
     const root = document.documentElement;
-
     const frameId = requestAnimationFrame(() => {
       setIsDark(root.classList.contains("dark"));
     });
-
     const observer = new MutationObserver(() => {
       setIsDark(root.classList.contains("dark"));
     });
-
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
     return () => {
       cancelAnimationFrame(frameId);
@@ -37,61 +43,109 @@ function ReadOnlyMapInterior({ coords }: { coords: LatLng }) {
     };
   }, []);
 
-  // Pan to coordinates when map loads
+  return isDark;
+}
+
+function spotsWithCoords(spots: FishingSpot[]): FishingSpot[] {
+  return spots.filter(
+    (s) => typeof s.lat === "number" && typeof s.lng === "number"
+  );
+}
+
+function DiscoveryMapInterior({
+  spots,
+  onSelectSpot,
+  onMapClick,
+}: {
+  spots: FishingSpot[];
+  onSelectSpot: (id: string) => void;
+  onMapClick: (e: MapMouseEvent) => void;
+}) {
+  const map = useMap();
+  const isDark = useMapColorScheme();
+  const validSpots = useMemo(() => spotsWithCoords(spots), [spots]);
+
   useEffect(() => {
-    if (map && coords) {
-      map.panTo(coords);
+    if (!map || validSpots.length === 0) return;
+
+    if (validSpots.length === 1) {
+      const spot = validSpots[0];
+      map.setCenter({ lat: spot.lat!, lng: spot.lng! });
+      map.setZoom(13);
+      return;
     }
-  }, [map, coords]);
+
+    const bounds = new google.maps.LatLngBounds();
+    validSpots.forEach((spot) => {
+      bounds.extend({ lat: spot.lat!, lng: spot.lng! });
+    });
+    map.fitBounds(bounds, { top: 80, bottom: 160, left: 40, right: 40 });
+  }, [map, validSpots]);
+
+  const defaultCenter: LatLng =
+    validSpots.length > 0
+      ? { lat: validSpots[0].lat!, lng: validSpots[0].lng! }
+      : ELAZIG_CENTER;
 
   return (
     <Map
-      defaultCenter={coords}
-      defaultZoom={13}
-      mapId="mera-map-view"
+      defaultCenter={defaultCenter}
+      defaultZoom={10}
+      mapId="spot-discovery-modal-map"
       colorScheme={isDark ? "DARK" : "LIGHT"}
       gestureHandling="greedy"
       disableDefaultUI={false}
+      onClick={onMapClick}
       className="w-full h-full"
     >
-      <AdvancedMarker position={coords}>
-        <Pin
-          background="var(--color-mera-primary)"
-          borderColor="var(--color-mera-primary)"
-          glyphColor="var(--color-mera-primary)"
-        />
-      </AdvancedMarker>
+      {validSpots.map((spot) => (
+        <AdvancedMarker
+          key={spot.id}
+          position={{ lat: spot.lat!, lng: spot.lng! }}
+          onClick={(e) => {
+            console.log("Marker clicked:");
+            e.domEvent.stopPropagation();
+            onSelectSpot(spot.id);
+          }}
+        >
+          
+        </AdvancedMarker>
+      ))}
     </Map>
   );
 }
 
-// ─── Read-Only Map Modal ──────────────────────────────────────────────────────
-// Reuses the same modal shell pattern as MapPickerModal but without
-// click-to-select, locate-me, or save functionality.
-
-export function MapViewModal({
+export function SpotDiscoveryMapModal({
   isOpen,
-  coords,
-  label,
+  spots,
   onClose,
-}: MapViewModalProps) {
+}: SpotDiscoveryMapModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
 
-  // Escape key to close
+  const selectedSpot = useMemo(
+    () => spots.find((s) => s.id === selectedSpotId) ?? null,
+    [spots, selectedSpotId]
+  );
+
+  const handleClose = useCallback(() => {
+    setSelectedSpotId(null);
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     setTimeout(() => closeRef.current?.focus(), 50);
 
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
-  // Prevent body scroll while open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -105,10 +159,14 @@ export function MapViewModal({
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
-      if (e.target === overlayRef.current) onClose();
+      if (e.target === overlayRef.current) handleClose();
     },
-    [onClose]
+    [handleClose]
   );
+
+  const handleMapClick = useCallback(() => {
+    setSelectedSpotId(null);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -117,7 +175,7 @@ export function MapViewModal({
       ref={overlayRef}
       role="dialog"
       aria-modal="true"
-      aria-label={`${label} konumu`}
+      aria-label="Mera Keşfi"
       onClick={handleBackdropClick}
       className="
         fixed inset-0 z-50
@@ -126,7 +184,6 @@ export function MapViewModal({
         animate-in fade-in-0 duration-200
       "
     >
-      {/* Modal panel */}
       <div
         className="
           relative flex flex-col
@@ -137,19 +194,19 @@ export function MapViewModal({
           animate-in zoom-in-95 duration-200
         "
         style={{ height: "min(90vh, 680px)" }}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border dark:border-zinc-700 flex-shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
             <h2 className="text-sm font-semibold text-foreground dark:text-zinc-100 truncate">
-              {label}
+              Mera Keşfi
             </h2>
           </div>
           <button
             ref={closeRef}
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Modalı kapat"
             className="
               w-8 h-8 flex items-center justify-center rounded-lg
@@ -163,18 +220,27 @@ export function MapViewModal({
           </button>
         </div>
 
-        {/* Map area (read-only) */}
         <div className="relative flex-1 min-h-0">
           <APIProvider apiKey={MAPS_API_KEY}>
-            <ReadOnlyMapInterior coords={coords} />
+            <DiscoveryMapInterior
+              spots={spots}
+              onSelectSpot={setSelectedSpotId}
+              onMapClick={handleMapClick}
+            />
           </APIProvider>
+
+          {selectedSpot && (
+            <SpotMarkerPopup
+              spot={selectedSpot}
+              onDeselect={() => setSelectedSpotId(null)}
+            />
+          )}
         </div>
 
-        {/* Footer */}
         <div className="flex-shrink-0 px-4 py-3 border-t border-border dark:border-zinc-700 bg-white dark:bg-zinc-900">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="
               w-full h-10 rounded-lg
               bg-primary text-primary-foreground

@@ -1,4 +1,10 @@
-import { SpotResult, EquipmentResult, TipResult, FishingSpot } from "@/types/assistant";
+import {
+  SpotResult,
+  EquipmentResult,
+  TipResult,
+  FishingSpot,
+  WeatherData,
+} from "@/types/assistant";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
@@ -119,6 +125,39 @@ export interface ApiFishingSpot {
   water_type: string;
   center_lat: number;
   center_lng: number;
+  description?: string;
+  min_depth?: number;
+  max_depth?: number;
+}
+
+function formatDepthValue(value?: number | null): string {
+  if (value === null || value === undefined) {
+    return "?";
+  }
+  const numericValue = Number(value);
+  if (Number.isNaN(numericValue)) {
+    return "?";
+  }
+  return String(numericValue);
+}
+
+export function formatDepthRange(
+  minDepth?: number | null,
+  maxDepth?: number | null
+): string {
+  const min = formatDepthValue(minDepth);
+  const max = formatDepthValue(maxDepth);
+
+  if (min === "?" && max === "?") {
+    return "?";
+  }
+  if (min === "?") {
+    return `${max} metre`;
+  }
+  if (max === "?") {
+    return `${min} metre`;
+  }
+  return `${min} - ${max} metre`;
 }
 
 export async function fetchFishingSpots(): Promise<FishingSpot[]> {
@@ -136,7 +175,30 @@ export async function fetchFishingSpots(): Promise<FishingSpot[]> {
     region: spot.water_type,
     lat: spot.center_lat,
     lng: spot.center_lng,
+    description: spot.description,
+    minDepth: spot.min_depth,
+    maxDepth: spot.max_depth,
   }));
+}
+
+export async function fetchWeather(
+  lat: number,
+  lon: number
+): Promise<WeatherData> {
+  const params = new URLSearchParams({
+    lat: String(lat),
+    lon: String(lon),
+  });
+  const response = await fetch(`${API_BASE}/weather?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch weather");
+  }
+  const data = await response.json();
+  return {
+    temperature: data.temperature,
+    windSpeed: data.windSpeed,
+    pressure: data.pressure,
+  };
 }
 
 export async function fetchFishSpecies(): Promise<string[]> {

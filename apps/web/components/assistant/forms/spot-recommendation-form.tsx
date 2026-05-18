@@ -8,6 +8,7 @@ import { LocationCombobox } from "../location-combobox";
 import { MapPickerModal } from "../map-picker-modal";
 import { MapViewModal } from "../map-view-modal";
 import { SpotResultsSection } from "../results/spot-results-section";
+import { SpotDiscoverySection } from "../spot-discovery-section";
 import { ELAZIG_CENTER } from "@/constants/assistant";
 import { LatLng, SpotResult, FilterTag } from "@/types/assistant";
 import { fetchSpotRecommendation, SpotRecommendationRequest, fetchFishingSpots, fetchFishSpecies } from "@/lib/assistant-api";
@@ -158,6 +159,11 @@ export function SpotRecommendationForm() {
         filterTags={submittedTags}
         onRetry={handleRetry}
         onShowMap={handleShowMap}
+      />
+
+      <SpotDiscoverySection
+        spots={fishingSpots}
+        isLoading={isLoadingSpots}
       />
 
       {/* Map picker modal (for form location selection) */}

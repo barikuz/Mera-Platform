@@ -14,5 +14,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "@types/google.maps": "^3.64.1"
+  }
 }

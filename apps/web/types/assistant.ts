@@ -15,6 +15,21 @@ export interface FishingSpot {
   region: string;
   lat?: number;
   lng?: number;
+  description?: string;
+  minDepth?: number;
+  maxDepth?: number;
+}
+
+export interface WeatherData {
+  temperature: number;
+  windSpeed: number;
+  pressure: number;
+}
+
+export interface SpotDiscoveryMapModalProps {
+  isOpen: boolean;
+  spots: FishingSpot[];
+  onClose: () => void;
 }
 
 export interface LatLng {
