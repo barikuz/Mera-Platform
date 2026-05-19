@@ -3,34 +3,35 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { InlineLoader, Spinner } from "@/components/ui/spinner";
-import { ProductCard } from "@/components/store/product-card";
-import { fetchShopCategories, fetchShopProducts } from "@/lib/shop-api";
+import { CategoryFilterChips } from "@/components/store/category-filter-chips";
+import { ProductGrid } from "@/components/store/product-grid";
+import { useShopCategories } from "@/hooks/use-shop-categories";
+import { fetchShopProducts } from "@/lib/shop-api";
+import { buildStoreCategoryChips } from "@/lib/shop-utils";
 
 export function StoreView() {
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState("");
 
-  const categoriesQuery = useQuery({
-    queryKey: ["shop", "categories"],
-    queryFn: fetchShopCategories,
-  });
+  const {
+    data: categories,
+    categoryNameById,
+    isPending: categoriesPending,
+    isFetched: categoriesFetched,
+    isError: categoriesError,
+    error: categoriesQueryError,
+  } = useShopCategories();
 
   const productsQuery = useQuery({
     queryKey: ["shop", "products", categoryId ?? "all"],
     queryFn: () => fetchShopProducts(categoryId),
   });
 
-  const categoryNameById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const c of categoriesQuery.data ?? []) {
-      if (c.id && c.name) {
-        map.set(c.id, c.name);
-      }
-    }
-    return map;
-  }, [categoriesQuery.data]);
+  const categoryChips = useMemo(
+    () => buildStoreCategoryChips(categories ?? []),
+    [categories]
+  );
 
   const filteredProducts = useMemo(() => {
     const list = productsQuery.data ?? [];
@@ -39,11 +40,10 @@ export function StoreView() {
     return list.filter((p) => (p.name ?? "").toLowerCase().includes(q));
   }, [productsQuery.data, search]);
 
-  const categoriesError = categoriesQuery.isError;
   const productsError = productsQuery.isError;
   const showInitialLoader =
-    (categoriesQuery.isPending || productsQuery.isPending) &&
-    !categoriesQuery.isFetched &&
+    (categoriesPending || productsQuery.isPending) &&
+    !categoriesFetched &&
     !productsQuery.isFetched;
 
   return (
@@ -62,8 +62,8 @@ export function StoreView() {
           className="mb-8 rounded-lg border border-mera-status-error/30 bg-mera-status-error/10 px-4 py-3 text-sm text-mera-status-error"
           role="alert"
         >
-          {categoriesQuery.error instanceof Error
-            ? categoriesQuery.error.message
+          {categoriesQueryError instanceof Error
+            ? categoriesQueryError.message
             : productsQuery.error instanceof Error
               ? productsQuery.error.message
               : "Ürünler veya kategoriler yüklenirken bir hata oluştu."}
@@ -85,37 +85,14 @@ export function StoreView() {
         />
       </div>
 
-      <div className="-mx-1 mb-10 overflow-x-auto px-1 pb-1">
-        <div className="flex w-max min-w-full gap-2 sm:min-w-0 sm:flex-wrap">
-          <Button
-            type="button"
-            variant={categoryId === undefined ? "default" : "outline"}
-            size="sm"
-            className="shrink-0 rounded-full"
-            onClick={() => setCategoryId(undefined)}
-          >
-            Tümü
-          </Button>
-          {categoriesQuery.isPending && categoriesQuery.data === undefined ? (
-            <div className="flex items-center px-2">
-              <InlineLoader text="Kategoriler..." />
-            </div>
-          ) : (
-            (categoriesQuery.data ?? []).map((cat) => (
-              <Button
-                key={cat.id}
-                type="button"
-                variant={categoryId === cat.id ? "default" : "outline"}
-                size="sm"
-                className="shrink-0 rounded-full"
-                onClick={() => setCategoryId(cat.id)}
-              >
-                {cat.name ?? "Kategori"}
-              </Button>
-            ))
-          )}
-        </div>
-      </div>
+      <CategoryFilterChips
+        chips={categoryChips}
+        activeId={categoryId ?? "all"}
+        onSelect={(id) => setCategoryId(id === "all" ? undefined : id)}
+        className="mb-10"
+        scrollable
+        isLoading={categoriesPending && categories === undefined}
+      />
 
       {showInitialLoader ? (
         <div className="flex justify-center py-20">
@@ -132,19 +109,11 @@ export function StoreView() {
             : "Bu kategoride henüz ürün yok veya liste boş."}
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              categoryLabel={
-                product.category_id
-                  ? categoryNameById.get(product.category_id)
-                  : undefined
-              }
-            />
-          ))}
-        </div>
+        <ProductGrid
+          products={filteredProducts}
+          categoryNameById={categoryNameById}
+          className="grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4"
+        />
       )}
     </div>
   );
