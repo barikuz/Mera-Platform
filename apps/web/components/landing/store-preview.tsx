@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +25,11 @@ export function StorePreview() {
               Profesyonel balıkçılık ekipmanlarını keşfedin ve avınız için en uygun ürünleri bulun.
             </p>
           </div>
-          <Button variant="outline" className="shrink-0">
-            Tüm Ürünler
-            <ArrowRight className="ml-2 h-4 w-4" />
+          <Button variant="outline" className="shrink-0" asChild>
+            <Link href="/store">
+              Tüm Ürünler
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
 
