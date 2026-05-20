@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 };
 
 import { QueryProvider } from "@/components/query-provider";
+import { CartProvider } from "@/components/cart/cart-provider";
 
 export default function RootLayout({
   children,
@@ -51,7 +52,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${comfortaa.variable} font-sans antialiased`}>
         <QueryProvider>
-          {children}
+          <CartProvider>{children}</CartProvider>
         </QueryProvider>
       </body>
     </html>

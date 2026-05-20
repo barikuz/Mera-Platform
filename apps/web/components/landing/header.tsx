@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ProfileDropdown } from "@/components/auth/ProfileDropdown";
+import { CartDropdown } from "@/components/cart/cart-dropdown";
 import { useAuth } from "@/hooks/use-auth";
 import { logout } from "@/lib/auth";
 import { Menu, Home, ShoppingBag, Sparkles, User, LogOut } from "lucide-react";
@@ -56,6 +57,7 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex md:items-center md:gap-2">
+            <CartDropdown />
             <ThemeToggle />
             {isLoading ? (
               /* Skeleton placeholder while auth state loads */
@@ -80,6 +82,7 @@ export function Header() {
 
           {/* Mobile Menu */}
           <div className="flex items-center gap-2 md:hidden">
+            <CartDropdown />
             <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>

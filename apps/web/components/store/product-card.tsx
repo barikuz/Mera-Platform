@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import type { ShopProduct } from "@/lib/shop-api";
 import { formatTry } from "@/lib/format-try";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/hooks/use-cart";
 
 export function ProductCard({
   product,
@@ -13,6 +14,7 @@ export function ProductCard({
   product: ShopProduct;
   categoryLabel?: string;
 }) {
+  const { addItem } = useCart();
   const src = product.image_url?.trim();
   const hasImage = Boolean(src);
 
@@ -50,11 +52,19 @@ export function ProductCard({
               type="button"
               size="icon"
               variant="outline"
+              onClick={() =>
+                addItem({
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  image_url: product.image_url,
+                })
+              }
               className={cn(
                 "h-9 w-9 shrink-0 border-primary/20 text-primary",
                 "hover:bg-primary hover:text-primary-foreground dark:border-primary/40"
               )}
-              aria-label="Sepete ekle (yakında)"
+              aria-label="Sepete ekle"
             >
               <Plus className="h-4 w-4" />
             </Button>
