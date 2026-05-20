@@ -10,6 +10,8 @@ export type CartItem = CartProduct & {
 };
 
 export type CartContextValue = {
+  /** True after client has loaded cart from localStorage (SSR-safe) */
+  isHydrated: boolean;
   items: CartItem[];
   itemCount: number;
   totalPrice: number;

@@ -22,11 +22,18 @@ import type { CartContextValue, CartItem, CartProduct } from "@/types/cart";
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(getStoredCartItems);
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    setItems(getStoredCartItems());
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
     persistCartItems(items);
-  }, [items]);
+  }, [items, isHydrated]);
 
   const addItem = useCallback((product: CartProduct) => {
     setItems((prev) => addCartItem(prev, product));
@@ -53,6 +60,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const totalPrice = getTotalPrice(items);
 
     return {
+      isHydrated,
       items,
       itemCount,
       totalPrice,
@@ -62,7 +70,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeItem,
       clearCart,
     };
-  }, [addItem, clearCart, decrement, increment, items, removeItem]);
+  }, [addItem, clearCart, decrement, increment, isHydrated, items, removeItem]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

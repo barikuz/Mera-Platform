@@ -11,6 +11,7 @@ export function CheckoutView() {
   const {
     user,
     isAuthLoading,
+    isCartHydrated,
     items,
     itemCount,
     form,
@@ -22,7 +23,7 @@ export function CheckoutView() {
     handleSubmit,
   } = useCheckout();
 
-  if (isAuthLoading || !user) {
+  if (isAuthLoading || !user || !isCartHydrated) {
     return <FullScreenSpinner />;
   }
 

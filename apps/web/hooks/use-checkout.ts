@@ -19,7 +19,8 @@ import {
 export function useCheckout() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { items, itemCount, totalPrice, clearCart } = useCart();
+  const { isHydrated: isCartHydrated, items, itemCount, totalPrice, clearCart } =
+    useCart();
 
   const [form, setForm] = useState<CheckoutFormState>(initialCheckoutForm);
   const [formError, setFormError] = useState("");
@@ -66,6 +67,7 @@ export function useCheckout() {
   return {
     user,
     isAuthLoading,
+    isCartHydrated,
     items,
     itemCount,
     form,
