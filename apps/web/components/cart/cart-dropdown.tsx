@@ -1,14 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { formatTry } from "@/lib/format-try";
 import { cn } from "@/lib/utils";
 
 export function CartDropdown() {
+  const router = useRouter();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [authMessage, setAuthMessage] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const {
     items,
@@ -49,13 +54,33 @@ export function CartDropdown() {
 
   const totalText = useMemo(() => formatTry(totalPrice), [totalPrice]);
 
+  function handleCheckout() {
+    if (isAuthLoading || items.length === 0) return;
+
+    if (!user) {
+      setAuthMessage("Ödeme için giriş yapmanız gerekiyor.");
+      window.setTimeout(() => {
+        setIsOpen(false);
+        router.push("/login?redirect=/checkout");
+      }, 1200);
+      return;
+    }
+
+    setAuthMessage("");
+    setIsOpen(false);
+    router.push("/checkout");
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => {
+          setAuthMessage("");
+          setIsOpen((prev) => !prev);
+        }}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label="Sepeti aç"
@@ -170,6 +195,14 @@ export function CartDropdown() {
             </div>
 
             <div className="sticky bottom-0 border-t border-border bg-popover px-4 pb-4 pt-3">
+              {authMessage ? (
+                <div
+                  role="alert"
+                  className="mb-3 rounded-lg border border-mera-status-warning/30 bg-mera-status-warning/10 px-3 py-2 text-sm text-mera-status-warning"
+                >
+                  {authMessage}
+                </div>
+              ) : null}
               <div className="mb-3 flex items-center justify-between text-base font-semibold">
                 <span>Genel Toplam</span>
                 <span>{totalText}</span>
@@ -177,8 +210,8 @@ export function CartDropdown() {
               <Button
                 type="button"
                 className="w-full"
-                disabled={items.length === 0}
-                onClick={() => setIsOpen(false)}
+                disabled={items.length === 0 || isAuthLoading}
+                onClick={handleCheckout}
               >
                 Ödemeye Geç
               </Button>

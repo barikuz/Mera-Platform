@@ -14,10 +14,12 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { StorePreview } from "@/components/landing/store-preview";
 import { CTA } from "@/components/landing/cta";
 import { Footer } from "@/components/landing/footer";
+import { OrderSuccessToast } from "@/components/ui/order-success-toast";
 
 export default function Home() {
   return (
     <main className="min-h-screen">
+      <OrderSuccessToast />
       <Header />
       <SectionNav />
       <Hero />

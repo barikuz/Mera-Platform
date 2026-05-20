@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { ProfileDropdown } from "@/components/auth/ProfileDropdown";
+import { ProfileDropdown } from "@/components/auth/profile-dropdown";
 import { CartDropdown } from "@/components/cart/cart-dropdown";
 import { useAuth } from "@/hooks/use-auth";
 import { logout } from "@/lib/auth";
