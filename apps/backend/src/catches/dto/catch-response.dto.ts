@@ -13,8 +13,8 @@ export class CatchRecordDto {
   })
   user_id!: string;
 
-  @ApiProperty({ description: 'Yakaladiginiz baligin turu', example: 'Sazan' })
-  species!: string;
+  @ApiProperty({ description: 'Yakaladiginiz baligin turunun kimligi', example: '123e4567-e89b-12d3-a456-426614174000' })
+  species_id!: string;
 
   @ApiPropertyOptional({
     description: 'Baligin kilogram cinsinden agirligi',
