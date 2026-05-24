@@ -7,6 +7,7 @@ import type { CatchRecord, FishSpeciesCatalogItem } from "@/lib/catches-api";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "./empty-state";
 import { MetricsCards } from "./metrics-cards";
+import { CatchHistoryList } from "./catch-history-list";
 
 // ── Dynamic Imports for Charts ──────────────────────────────────────────────
 
@@ -180,6 +181,9 @@ export function CatchStatsDashboard({ catches, species, isLoading, isError }: Pr
 
       {/* Species distribution pie */}
       <SpeciesChart data={stats.speciesData} />
+
+      {/* Catch history list */}
+      <CatchHistoryList catches={catches} species={species} />
     </div>
   );
 }
