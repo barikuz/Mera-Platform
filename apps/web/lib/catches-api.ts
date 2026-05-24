@@ -10,6 +10,21 @@ export interface CreateCatchPayload {
   location_lng?: number;
 }
 
+export interface CatchRecord {
+  id: string;
+  user_id: string;
+  species_id: string;
+  weight_kg: number | null;
+  length_cm: number | null;
+  location_lat: number | null;
+  location_lng: number | null;
+  weather_temp_c: number | null;
+  weather_pressure_hpa: number | null;
+  weather_wind_speed_kmh: number | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
 export interface FishSpeciesCatalogItem {
   id: string;
   name: string;
@@ -48,4 +63,30 @@ export async function createCatch(payload: CreateCatchPayload): Promise<void> {
       errorData?.message || "Av kaydı oluşturulamadı. Lütfen tekrar deneyin."
     );
   }
+}
+
+export async function fetchCatches(): Promise<CatchRecord[]> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error("Oturum bulunamadı. Lütfen tekrar giriş yapın.");
+  }
+
+  const response = await fetch(`${API_BASE}/catches`, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(
+      errorData?.message || "Av kayıtları alınamadı. Lütfen tekrar deneyin."
+    );
+  }
+
+  const json = await response.json();
+  return (json?.data ?? []) as CatchRecord[];
 }

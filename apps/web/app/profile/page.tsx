@@ -2,17 +2,29 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Header } from "@/components/landing/header";
 import { useAuth } from "@/hooks/use-auth";
+import { useCatches } from "@/hooks/use-catches";
+import { fetchFishSpeciesCatalog } from "@/lib/catches-api";
 import { logout } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
 import { FullScreenSpinner } from "@/components/ui/spinner";
-import { LogOut, User } from "lucide-react";
+import { CatchStatsDashboard } from "@/components/profile/catch-stats-dashboard";
+import { ProfileSidebar } from "@/components/profile/profile-sidebar";
+import { useQuery } from "@tanstack/react-query";
+import { User } from "lucide-react";
+import { Header } from "@/components/landing/header";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+
+  // Fetch catches & species once the user is confirmed
+  const catchesQuery = useCatches(!!user && !isLoading);
+  const speciesQuery = useQuery({
+    queryKey: ["catalog", "fish-species"],
+    queryFn: fetchFishSpeciesCatalog,
+    enabled: !!user && !isLoading,
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -45,62 +57,39 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 pt-28 pb-16">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-28 pb-16">
         {/* Page heading */}
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30 mb-5">
-            <User className="h-7 w-7 text-primary" />
+        <div className="mb-10 flex items-center gap-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+            <User className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Profilim
           </h1>
         </div>
 
-        {/* Profile Card */}
-        <div className="bg-card text-card-foreground rounded-xl border border-border shadow-sm p-8 mb-6">
-          <div className="flex flex-col items-center gap-4">
-            {/* Avatar */}
-            <div className="flex items-center justify-center h-24 w-24 rounded-full bg-primary/10 dark:bg-primary/20 border-3 border-primary/30 dark:border-primary/40 text-primary font-bold text-2xl overflow-hidden">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span>{initials}</span>
-              )}
-            </div>
-
-            {/* Name & email */}
-            <div className="text-center">
-              <p className="text-xl font-semibold text-foreground">
-                {displayName}
-              </p>
-              {email && (
-                <p className="text-sm text-muted-foreground mt-1">{email}</p>
-              )}
-            </div>
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 items-start">
+          {/* Left column: Sidebar */}
+          <div>
+            <ProfileSidebar
+              displayName={displayName}
+              email={email}
+              avatarUrl={avatarUrl}
+              initials={initials}
+              onLogout={handleLogout}
+            />
           </div>
-        </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-3">
-          <Link href="/profile/add-catch">
-            <Button className="w-full h-12 text-base gap-2" size="lg">
-              Av Kaydı Ekle
-            </Button>
-          </Link>
-
-          <Button
-            variant="outline"
-            className="w-full h-12 text-base gap-2 text-mera-status-error hover:text-mera-status-error hover:bg-mera-status-error/10 hover:border-mera-status-error/30"
-            size="lg"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-5 w-5" />
-            Çıkış Yap
-          </Button>
+          {/* Right column: Stats dashboard */}
+          <div>
+            <CatchStatsDashboard
+              catches={catchesQuery.data ?? []}
+              species={speciesQuery.data ?? []}
+              isLoading={catchesQuery.isLoading || speciesQuery.isLoading}
+              isError={catchesQuery.isError}
+            />
+          </div>
         </div>
       </main>
     </div>

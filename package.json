@@ -17,5 +17,8 @@
   ],
   "devDependencies": {
     "@types/google.maps": "^3.64.1"
+  },
+  "dependencies": {
+    "recharts": "^3.8.1"
   }
 }
