@@ -1,6 +1,7 @@
 "use client";
 
 import { BrainCog } from "lucide-react";
+import Image from "next/image";
 import { EquipmentResult } from "@/types/assistant";
 import { EQUIPMENT_CATEGORY_ICONS } from "@/constants/assistant-results";
 
@@ -9,10 +10,11 @@ interface EquipmentResultCardProps {
 }
 
 // Individual equipment recommendation card.
-// Category icon on left, product name + price on right, expert note below.
+// Product image on left, product name + price on right, expert note below.
 
 export function EquipmentResultCard({ result }: EquipmentResultCardProps) {
   const categoryIcon = EQUIPMENT_CATEGORY_ICONS[result.category] ?? "🎣";
+  const hasImage = Boolean(result.image_url?.trim());
 
   // Category-specific accent colour mapping
   const categoryColors: Record<string, string> = {
@@ -30,11 +32,24 @@ export function EquipmentResultCard({ result }: EquipmentResultCardProps) {
 
   return (
     <div className="rounded-xl border border-border bg-card dark:bg-card/80 p-5 shadow-sm">
-      {/* Top row: icon + product info */}
+      {/* Top row: image/icon + product info */}
       <div className="flex items-start gap-4">
-        {/* Category icon container */}
-        <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-secondary/60 dark:bg-mera-neutral-800/60 border border-border dark:border-mera-neutral-700 flex items-center justify-center text-2xl">
-          {categoryIcon}
+        {/* Product image/icon container */}
+        <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-secondary/60 dark:bg-mera-neutral-800/60 border border-border dark:border-mera-neutral-700 flex items-center justify-center overflow-hidden relative">
+          {hasImage && result.image_url ? (
+            <Image
+              src={result.image_url}
+              alt={result.productName}
+              fill
+              className="object-cover"
+              sizes="56px"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center w-full h-full gap-1 text-muted-foreground">
+              {/* Fallback to icon if no image */}
+              <span className="text-lg">{categoryIcon}</span>
+            </div>
+          )}
         </div>
 
         {/* Product details */}

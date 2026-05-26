@@ -5,6 +5,7 @@ import {
   FishingSpot,
   WeatherData,
 } from "@/types/assistant";
+import { fetchShopProducts, type ShopProduct } from "./shop-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
@@ -87,13 +88,35 @@ export async function fetchGearRecommendation(
   const data = await response.json();
   const rawItems: RawGearItem[] = data.onerilen_set || [];
 
-  return rawItems.map((item) => ({
-    productId: item.productId,
-    category: item.kategori,
-    productName: item.urunAdi || "",
-    price: item.fiyat || 0,
-    expertNote: item.uzmanNotu || "",
-  }));
+  // Fetch shop products to get image URLs
+  let shopProducts: ShopProduct[] = [];
+  try {
+    shopProducts = await fetchShopProducts();
+  } catch (error) {
+    console.warn("Failed to fetch shop products for equipment recommendations", error);
+  }
+
+  return rawItems.map((item) => {
+    // Try to find matching product by ID first, then by name
+    let matchedProduct = null;
+    if (item.productId) {
+      matchedProduct = shopProducts.find((p) => p.id === item.productId);
+    }
+    if (!matchedProduct) {
+      matchedProduct = shopProducts.find(
+        (p) => p.name?.toLowerCase() === item.urunAdi?.toLowerCase()
+      );
+    }
+
+    return {
+      productId: item.productId,
+      category: item.kategori,
+      productName: item.urunAdi || "",
+      price: item.fiyat || 0,
+      expertNote: item.uzmanNotu || "",
+      image_url: matchedProduct?.image_url || null,
+    };
+  });
 }
 
 export async function fetchTechnicalTips(

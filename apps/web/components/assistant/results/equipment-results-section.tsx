@@ -1,11 +1,13 @@
 "use client";
 
-import { Backpack, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { Backpack, ShoppingCart, Check } from "lucide-react";
 import { EquipmentResult, ResultStatus, FilterTag } from "@/types/assistant";
 import { SkeletonCards } from "./skeleton-cards";
 import { FilterTags } from "./filter-tags";
 import { ErrorState } from "./error-state";
 import { EquipmentResultCard } from "./equipment-result-card";
+import { useCart } from "@/hooks/use-cart";
 
 interface EquipmentResultsSectionProps {
   status: ResultStatus;
@@ -23,6 +25,35 @@ export function EquipmentResultsSection({
   filterTags,
   onRetry,
 }: EquipmentResultsSectionProps) {
+  const { addItem } = useCart();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
+
+  const handleAddAllToCart = async () => {
+    setIsAddingToCart(true);
+    
+    // Add a small delay to make the interaction feel intentional
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    
+    // Add all items to cart
+    results.forEach((result) => {
+      addItem({
+        id: result.productId || `equipment-${result.productName}`,
+        name: result.productName,
+        price: result.price,
+        image_url: result.image_url,
+      });
+    });
+
+    setIsAddingToCart(false);
+    setAddedToCart(true);
+
+    // Reset the success state after 2 seconds
+    setTimeout(() => {
+      setAddedToCart(false);
+    }, 2000);
+  };
+
   if (status === "idle") return null;
 
   const totalPrice = results.reduce((sum, r) => sum + r.price, 0);
@@ -76,18 +107,33 @@ export function EquipmentResultsSection({
           {/* Add to cart CTA */}
           <button
             type="button"
-            className="
+            onClick={handleAddAllToCart}
+            disabled={isAddingToCart}
+            className={`
               w-full flex items-center justify-center gap-2.5 h-12 mt-4 rounded-xl px-6
-              bg-primary text-primary-foreground font-semibold text-sm
-              shadow-sm hover:bg-primary/90 dark:hover:bg-primary/80
-              dark:hover:shadow-[0_0_20px_rgba(0,204,178,0.35)]
-              transition-all duration-200 cursor-pointer
+              font-semibold text-sm
+              shadow-sm transition-all duration-200
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
               active:scale-[0.98]
-            "
+              ${
+                addedToCart
+                  ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90 dark:hover:bg-primary/80 dark:hover:shadow-[0_0_20px_rgba(0,204,178,0.35)]"
+              }
+              ${isAddingToCart ? "opacity-75 cursor-wait" : "cursor-pointer"}
+            `}
           >
-            <ShoppingCart className="h-5 w-5" />
-            Tüm Seti Sepete Ekle
+            {addedToCart ? (
+              <>
+                <Check className="h-5 w-5" />
+                Sepete Eklendi
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="h-5 w-5" />
+                Tüm Seti Sepete Ekle
+              </>
+            )}
           </button>
         </>
       )}

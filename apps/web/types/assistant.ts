@@ -67,6 +67,7 @@ export interface EquipmentResult {
   productName: string;
   price: number;
   expertNote: string;
+  image_url?: string | null;
 }
 
 export interface TipResult {
