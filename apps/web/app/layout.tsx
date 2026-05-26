@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 
 import { QueryProvider } from "@/components/query-provider";
 import { CartProvider } from "@/components/cart/cart-provider";
+import { Footer } from "@/components/landing/footer";
 
 export default function RootLayout({
   children,
@@ -50,9 +51,14 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${comfortaa.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${comfortaa.variable} font-sans antialiased flex flex-col min-h-screen`}>
         <QueryProvider>
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>
+            <div className="flex-1 flex flex-col">
+              {children}
+            </div>
+            <Footer />
+          </CartProvider>
         </QueryProvider>
       </body>
     </html>

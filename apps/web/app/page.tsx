@@ -13,7 +13,6 @@ import { Features } from "@/components/landing/features";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { StorePreview } from "@/components/landing/store-preview";
 import { CTA } from "@/components/landing/cta";
-import { Footer } from "@/components/landing/footer";
 import { OrderSuccessToast } from "@/components/ui/order-success-toast";
 
 export default function Home() {
@@ -27,7 +26,6 @@ export default function Home() {
       <HowItWorks />
       <StorePreview />
       <CTA />
-      <Footer />
     </main>
   );
 }
