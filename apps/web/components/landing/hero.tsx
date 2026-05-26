@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Sparkles, Fish, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -38,9 +39,12 @@ export function Hero() {
               <Button
                 size="lg"
                 className="group text-base px-8 h-12 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
+                asChild
               >
-                Hemen Başla
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                <Link href="/assistant">
+                  Hemen Başla
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
               </Button>
               <Button
                 size="lg"
