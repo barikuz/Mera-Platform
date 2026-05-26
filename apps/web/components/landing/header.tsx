@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Menu, Home, ShoppingBag, Sparkles } from "lucide-react";
+import { ProfileDropdown } from "@/components/auth/profile-dropdown";
+import { CartDropdown } from "@/components/cart/cart-dropdown";
+import { useAuth } from "@/hooks/use-auth";
+import { logout } from "@/lib/auth";
+import { Menu, Home, ShoppingBag, Sparkles, User, LogOut } from "lucide-react";
 
 const navigation = [
   { name: "Ana Sayfa", href: "/", icon: Home },
@@ -15,6 +20,15 @@ const navigation = [
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  async function handleMobileLogout() {
+    setIsOpen(false);
+    await logout();
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 dark:bg-mera-neutral-950/90 backdrop-blur-md border-b border-border dark:border-mera-neutral-800/60">
@@ -43,15 +57,32 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex md:items-center md:gap-2">
+            <CartDropdown />
             <ThemeToggle />
-            <Button variant="ghost" size="sm">
-              Giriş Yap
-            </Button>
-            <Button size="sm">Ücretsiz Başla</Button>
+            {isLoading ? (
+              /* Skeleton placeholder while auth state loads */
+              <div className="h-9 w-9 rounded-full bg-secondary/60 animate-pulse" />
+            ) : user ? (
+              /* Authenticated: Show profile dropdown */
+              <ProfileDropdown user={user} />
+            ) : (
+              /* Guest: Show login/register buttons */
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Giriş Yap
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm">Ücretsiz Başla</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu */}
           <div className="flex items-center gap-2 md:hidden">
+            <CartDropdown />
             <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -74,10 +105,77 @@ export function Header() {
                     </Link>
                   ))}
                   <div className="flex flex-col gap-3 pt-6 mt-4 border-t border-border">
-                    <Button variant="outline" className="w-full">
-                      Giriş Yap
-                    </Button>
-                    <Button className="w-full">Ücretsiz Başla</Button>
+                    {isLoading ? (
+                      /* Skeleton while loading */
+                      <div className="h-10 w-full rounded-md bg-secondary/60 animate-pulse" />
+                    ) : user ? (
+                      /* Authenticated: Show user info + logout */
+                      <>
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/30 dark:bg-mera-neutral-800/40">
+                          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 dark:bg-primary/20 border-2 border-primary/30 dark:border-primary/40 text-primary font-semibold text-sm shrink-0">
+                            {user.user_metadata?.avatar_url ? (
+                              <img
+                                src={user.user_metadata.avatar_url as string}
+                                alt="Profil"
+                                className="h-full w-full rounded-full object-cover"
+                              />
+                            ) : (
+                              <span>
+                                {(
+                                  (user.user_metadata?.display_name as string) ||
+                                  user.email ||
+                                  "?"
+                                )
+                                  .split(" ")
+                                  .map((w: string) => w[0])
+                                  .join("")
+                                  .toUpperCase()
+                                  .slice(0, 2)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {(user.user_metadata?.display_name as string) ||
+                                "Kullanıcı"}
+                            </p>
+                            {user.email && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground rounded-xl hover:bg-secondary/50 transition-colors"
+                        >
+                          <User className="h-5 w-5 text-muted-foreground" />
+                          Profilim
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleMobileLogout}
+                          className="flex items-center gap-3 px-4 py-3 text-base font-medium text-mera-status-error rounded-xl hover:bg-mera-status-error/10 transition-colors cursor-pointer"
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Çıkış Yap
+                        </button>
+                      </>
+                    ) : (
+                      /* Guest: Show login/register buttons */
+                      <>
+                        <Link href="/login" onClick={() => setIsOpen(false)}>
+                          <Button variant="outline" className="w-full">
+                            Giriş Yap
+                          </Button>
+                        </Link>
+                        <Link href="/register" onClick={() => setIsOpen(false)}>
+                          <Button className="w-full">Ücretsiz Başla</Button>
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               </SheetContent>

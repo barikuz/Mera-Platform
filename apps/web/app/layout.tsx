@@ -14,9 +14,16 @@ const comfortaa = Comfortaa({
 });
 
 export const metadata: Metadata = {
-  title: "Mera Platform",
-  description: "Mera Balıkçılık Platformu",
+  title: {
+    default: "Mera",
+    template: "%s | Mera",
+  },
+  description:
+    "Mera, balıkçılar için yapay zeka destekli asistan ve balıkçılık ekipmanları e-ticaret platformu. Doğru noktayı bul, doğru ekipmanı seç.",
 };
+
+import { QueryProvider } from "@/components/query-provider";
+import { CartProvider } from "@/components/cart/cart-provider";
 
 export default function RootLayout({
   children,
@@ -44,7 +51,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${comfortaa.variable} font-sans antialiased`}>
-        {children}
+        <QueryProvider>
+          <CartProvider>{children}</CartProvider>
+        </QueryProvider>
       </body>
     </html>
   );

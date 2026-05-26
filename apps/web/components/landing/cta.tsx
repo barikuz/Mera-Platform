@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export function CTA() {
   return (
@@ -32,9 +33,12 @@ export function CTA() {
                 size="lg"
                 variant="secondary"
                 className="group text-base px-8 h-12 bg-white text-primary transition-all duration-300 hover:bg-white hover:scale-105 hover:shadow-lg hover:shadow-white/20"
+                asChild
               >
-                Ücretsiz Hesap Oluştur
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                <Link href="/register">
+                  Ücretsiz Hesap Oluştur
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
               </Button>
             </div>
           </div>

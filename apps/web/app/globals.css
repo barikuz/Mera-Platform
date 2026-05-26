@@ -128,3 +128,41 @@
 @utility logo-glow-dark {
   text-shadow: 0 0 20px rgba(0, 204, 178, 0.6), 0 0 40px rgba(0, 204, 178, 0.2);
 }
+
+@layer utilities {
+  .mera-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.55) transparent;
+  }
+
+  .mera-scrollbar::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  .mera-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .mera-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.55);
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .mera-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(71, 85, 105, 0.7);
+  }
+
+  .dark .mera-scrollbar {
+    scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+  }
+
+  .dark .mera-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.45);
+  }
+
+  .dark .mera-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(148, 163, 184, 0.62);
+  }
+}

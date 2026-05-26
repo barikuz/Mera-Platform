@@ -3,7 +3,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
+  IsUUID,
   Max,
   Min,
   Validate,
@@ -34,12 +34,12 @@ class CatchLocationPairConstraint implements ValidatorConstraintInterface {
 
 export class CreateCatchDto {
   @ApiProperty({
-    description: 'Yakaladiginiz baligin turu',
-    example: 'Sazan',
+    description: 'Yakaladiginiz baligin turunun kimligi',
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
-  species!: string;
+  species_id!: string;
 
   @ApiPropertyOptional({
     description: 'Baligin kilogram cinsinden agirligi',

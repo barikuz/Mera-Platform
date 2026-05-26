@@ -26,7 +26,7 @@ export class CatchesService {
       .from('catches')
       .insert({
         user_id: userId,
-        species: createCatchDto.species,
+        species_id: createCatchDto.species_id,
         weight_kg: createCatchDto.weight_kg ?? null,
         length_cm: createCatchDto.length_cm ?? null,
         location_lat: createCatchDto.location_lat ?? null,

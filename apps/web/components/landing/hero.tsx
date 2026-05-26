@@ -46,8 +46,9 @@ export function Hero() {
                 size="lg"
                 variant="outline"
                 className="text-base px-8 h-12"
+                asChild
               >
-                Nasıl Çalışır?
+                <a href="#how-it-works">Nasıl Çalışır?</a>
               </Button>
             </div>
 
@@ -153,9 +154,9 @@ export function Hero() {
                     viewBox="0 0 24 24" 
                     fill="none" 
                     stroke="currentColor" 
-                    stroke-width="2" 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
                     className="lucide lucide-fishing-hook-icon lucide-fishing-hook"
                   >
                     <path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/>
