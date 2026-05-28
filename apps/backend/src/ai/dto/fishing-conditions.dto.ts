@@ -1,7 +1,7 @@
 /**
  * FishingConditionsDto - Av Kosullari Endpoint DTOs
  *
- * POST /fishing-conditions icin istek ve yanit veri transfer nesneleri.
+ * GET /fishing-conditions icin istek ve yanit veri transfer nesneleri.
  */
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, Max, Min } from 'class-validator';

@@ -4,9 +4,11 @@
  * Base URL: /ai
  */
 import {
-  Body,
   Controller,
+  Get,
   Post,
+  Body,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -90,7 +92,7 @@ export class AiController {
     return this.aiService.getTechnicalTips(body);
   }
 
-  @Post('fishing-conditions')
+  @Get('fishing-conditions')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @ApiOperation({
     summary: 'Konum bazli guncel av kosullarini getirir',
@@ -98,7 +100,7 @@ export class AiController {
       'Kullanicinin konumuna en yakin 3 meranin hava durumu verisini cekar, Gemini ile yorumlar ve av kosulu ozeti dondurur.',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Av kosullari basariyla getirildi.',
     type: FishingConditionsResponseDto,
   })
@@ -108,8 +110,8 @@ export class AiController {
     description: 'Hava durumu veya AI servisi kullanilamiyor.',
   })
   async getFishingConditions(
-    @Body() body: FishingConditionsRequestDto,
+    @Query() query: FishingConditionsRequestDto,
   ): Promise<FishingConditionsResponseDto> {
-    return this.aiService.getFishingConditions(body);
+    return this.aiService.getFishingConditions(query);
   }
 }
