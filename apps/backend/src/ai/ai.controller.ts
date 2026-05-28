@@ -16,6 +16,10 @@ import { SpotRecommendationRequestDto } from './dto/spot-recommendation.dto';
 import { GearRecommendationRequestDto } from './dto/gear-recommendation.dto';
 import { TechnicalTipsRequestDto } from './dto/technical-tips.dto';
 import {
+  FishingConditionsRequestDto,
+  FishingConditionsResponseDto,
+} from './dto/fishing-conditions.dto';
+import {
   GearRecommendationResponseDto,
   SpotRecommendationResponseDto,
   TechnicalTipsResponseDto,
@@ -84,5 +88,28 @@ export class AiController {
     @Body() body: TechnicalTipsRequestDto,
   ): Promise<TechnicalTipsResponseDto> {
     return this.aiService.getTechnicalTips(body);
+  }
+
+  @Post('fishing-conditions')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @ApiOperation({
+    summary: 'Konum bazli guncel av kosullarini getirir',
+    description:
+      'Kullanicinin konumuna en yakin 3 meranin hava durumu verisini cekar, Gemini ile yorumlar ve av kosulu ozeti dondurur.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Av kosullari basariyla getirildi.',
+    type: FishingConditionsResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Gecersiz koordinat verisi.' })
+  @ApiResponse({
+    status: 502,
+    description: 'Hava durumu veya AI servisi kullanilamiyor.',
+  })
+  async getFishingConditions(
+    @Body() body: FishingConditionsRequestDto,
+  ): Promise<FishingConditionsResponseDto> {
+    return this.aiService.getFishingConditions(body);
   }
 }

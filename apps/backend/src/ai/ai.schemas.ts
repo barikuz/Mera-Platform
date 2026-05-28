@@ -57,6 +57,22 @@ export const gearRecommendationResponseSchema = {
   required: ['onerilen_set'],
 };
 
+export const fishingConditionsResponseSchema = {
+  type: Type.OBJECT,
+  properties: {
+    status: {
+      type: Type.STRING,
+      description: 'Av kosullari degerlendirmesi: "good", "okay" veya "poor".',
+      enum: ['good', 'okay', 'poor'],
+    },
+    description: {
+      type: Type.STRING,
+      description: 'Av kosullarini aciklayan bir veya iki cumle.',
+    },
+  },
+  required: ['status', 'description'],
+};
+
 export const technicalTipsResponseSchema = {
   type: Type.OBJECT,
   properties: {

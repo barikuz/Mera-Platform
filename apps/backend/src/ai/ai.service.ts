@@ -17,9 +17,12 @@ import {
   GEAR_RECOMMENDATION_SYSTEM_PROMPT,
   SPOT_RECOMMENDATION_SYSTEM_PROMPT,
   TECHNICAL_TIPS_SYSTEM_PROMPT,
+  FISHING_CONDITIONS_SYSTEM_PROMPT,
   buildGearRecommendationUserPrompt,
   buildSpotRecommendationUserPrompt,
   buildTechnicalTipsUserPrompt,
+  buildFishingConditionsUserPrompt,
+  FishingConditionsWeatherContext,
   PromptGearStock,
   PromptFishingSpot,
 } from './ai.prompts';
@@ -27,12 +30,17 @@ import {
   gearRecommendationResponseSchema,
   spotRecommendationResponseSchema,
   technicalTipsResponseSchema,
+  fishingConditionsResponseSchema,
 } from './ai.schemas';
 import {
   GearRecommendationResponseDto,
   SpotRecommendationResponseDto,
   TechnicalTipsResponseDto,
 } from './dto/ai-response.dto';
+import {
+  FishingConditionsRequestDto,
+  FishingConditionsResponseDto,
+} from './dto/fishing-conditions.dto';
 import { GearRecommendationRequestDto } from './dto/gear-recommendation.dto';
 import { SpotRecommendationRequestDto } from './dto/spot-recommendation.dto';
 import { TechnicalTipsRequestDto } from './dto/technical-tips.dto';
@@ -133,6 +141,66 @@ export class AiService {
     );
   }
 
+  async getFishingConditions(
+    body: FishingConditionsRequestDto,
+  ): Promise<FishingConditionsResponseDto> {
+    // 1. Find the 3 closest fishing spots from the database
+    const closestSpots = await this.fetchClosestSpots(
+      body.userLat,
+      body.userLng,
+      3,
+    );
+
+    // 2. Determine which coordinates to fetch weather for.
+    //    If no spots found, fall back to the user's own coordinates.
+    const weatherTargets =
+      closestSpots.length > 0
+        ? closestSpots.map((s) => ({
+            name: s.name,
+            lat: Number(s.center_lat),
+            lng: Number(s.center_lng),
+          }))
+        : [{ name: 'Konumunuz', lat: body.userLat, lng: body.userLng }];
+
+    // 3. Fetch weather for all targets in parallel
+    const weatherResults = await Promise.all(
+      weatherTargets.map((target) =>
+        this.weatherService
+          .getWeatherForPrompt(target.lat, target.lng)
+          .then((w) => ({ ...w, spotName: target.name })),
+      ),
+    );
+
+    // 4. Build weather contexts for the Gemini prompt
+    const weatherContexts: FishingConditionsWeatherContext[] =
+      weatherResults.map((w) => ({
+        spotName: w.spotName,
+        temperatureC: w.temperatureC,
+        windSpeedMps: w.windSpeedMps,
+        pressureHpa: w.pressureHpa,
+        conditions: w.conditions,
+      }));
+
+    // 5. Ask Gemini to interpret the conditions
+    const userPrompt = buildFishingConditionsUserPrompt(weatherContexts);
+    const aiResult = await this.generateJsonResponse<{
+      status: 'good' | 'okay' | 'poor';
+      description: string;
+    }>(
+      FISHING_CONDITIONS_SYSTEM_PROMPT,
+      userPrompt,
+      fishingConditionsResponseSchema,
+    );
+
+    // 6. Return only the AI interpretation
+    return {
+      ai: {
+        status: aiResult.status,
+        description: aiResult.description,
+      },
+    };
+  }
+
   private async generateJsonResponse<T>(
     systemPrompt: string,
     userPrompt: string,
@@ -193,6 +261,42 @@ export class AiService {
     const rows = (data ?? []) as SupabaseFishingSpotRow[];
 
     return rows.map((spot) => this.mapFishingSpotRow(spot));
+  }
+
+  /**
+   * Veritabani fonksiyonu araciligiyla kullaniciya en yakin `limit` adet
+   * avlak noktasini getirir.
+   *
+   * Mesafe hesabi (Haversine) ve siralama tamamen PostgreSQL tarafinda yapilir;
+   * backend sadece sonuclari alir.
+   *
+   * DB fonksiyonu: get_closest_fishing_spots (supabase/migrations/)
+   */
+  private async fetchClosestSpots(
+    userLat: number,
+    userLng: number,
+    limit: number,
+  ): Promise<SupabaseFishingSpotRow[]> {
+    const { data, error } = (await this.supabaseService
+      .getClient()
+      .rpc('get_closest_fishing_spots', {
+        user_lat: userLat,
+        user_lng: userLng,
+        result_limit: limit,
+      })) as {
+      data: SupabaseFishingSpotRow[] | null;
+      error: { message: string } | null;
+    };
+
+    if (error) {
+      this.logger.error(
+        `get_closest_fishing_spots RPC hatasi: ${error.message}`,
+      );
+      // Non-fatal: caller falls back to user coordinates
+      return [];
+    }
+
+    return data ?? [];
   }
 
   private async fetchGearStock(): Promise<PromptGearStock> {
