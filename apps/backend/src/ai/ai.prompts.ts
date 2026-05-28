@@ -100,8 +100,8 @@ export const buildTechnicalTipsUserPrompt = (
 };
 export const FISHING_CONDITIONS_SYSTEM_PROMPT =
   'You are a professional fishing conditions analyst. Based solely on the provided weather data for nearby fishing spots, evaluate the overall fishing conditions and return a structured JSON response. ' +
-  'Evaluate conditions as "good" (calm weather, stable pressure, low-to-moderate wind ideal for fishing), "okay" (moderate conditions, some limitations but fishing is still viable), or "poor" (strong winds, extreme temperatures, or conditions that make fishing difficult or unsafe). ' +
-  'STRICT RULES: 1. Base your evaluation ONLY on the weather data provided. 2. Write the description in Turkish. 3. Keep the description to 1 sentences maximum. 4. Your response MUST be only valid JSON. Do not include any greetings, explanations, or markdown outside JSON.';
+  'Evaluate conditions as "good", "okay" or "poor". ' +
+  'STRICT RULES: 1. Base your evaluation ONLY on the weather data provided. 2. Write the description in Turkish. 3. Keep the description to 1 sentence maximum. 4. Your response MUST be only valid JSON. Do not include any greetings, explanations, or markdown outside JSON.';
 
 export type FishingConditionsWeatherContext = {
   spotName: string;
