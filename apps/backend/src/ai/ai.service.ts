@@ -14,6 +14,10 @@ import { GoogleGenAI } from '@google/genai';
 import { SupabaseService } from '../supabase/supabase.service';
 import { WeatherService } from '../weather/weather.service';
 import {
+  FishingSpotsService,
+  SupabaseFishingSpotRow,
+} from '../fishing-spots/fishing-spots.service';
+import {
   GEAR_RECOMMENDATION_SYSTEM_PROMPT,
   SPOT_RECOMMENDATION_SYSTEM_PROMPT,
   TECHNICAL_TIPS_SYSTEM_PROMPT,
@@ -47,15 +51,6 @@ import { TechnicalTipsRequestDto } from './dto/technical-tips.dto';
 
 type ResponseSchema = Record<string, unknown>;
 
-type SupabaseFishingSpotRow = {
-  name: string;
-  water_type: string;
-  min_depth?: number | string | null;
-  max_depth?: number | string | null;
-  center_lat: number | string;
-  center_lng: number | string;
-};
-
 type SupabaseCategoryRow = {
   id: string;
   name: string | null;
@@ -79,6 +74,7 @@ export class AiService {
     private readonly configService: ConfigService,
     private readonly supabaseService: SupabaseService,
     private readonly weatherService: WeatherService,
+    private readonly fishingSpotsService: FishingSpotsService,
   ) {
     const key = this.configService.get<string>('GEMINI_API_KEY');
     if (!key) {
@@ -144,8 +140,8 @@ export class AiService {
   async getFishingConditions(
     body: FishingConditionsRequestDto,
   ): Promise<FishingConditionsResponseDto> {
-    // 1. Find the 3 closest fishing spots from the database
-    const closestSpots = await this.fetchClosestSpots(
+    // 1. Find the 3 closest fishing spots from the database (delegated to FishingSpotsService)
+    const closestSpots = await this.fishingSpotsService.fetchClosestSpots(
       body.userLat,
       body.userLng,
       3,
@@ -263,41 +259,7 @@ export class AiService {
     return rows.map((spot) => this.mapFishingSpotRow(spot));
   }
 
-  /**
-   * Veritabani fonksiyonu araciligiyla kullaniciya en yakin `limit` adet
-   * avlak noktasini getirir.
-   *
-   * Mesafe hesabi (Haversine) ve siralama tamamen PostgreSQL tarafinda yapilir;
-   * backend sadece sonuclari alir.
-   *
-   * DB fonksiyonu: get_closest_fishing_spots (supabase/migrations/)
-   */
-  private async fetchClosestSpots(
-    userLat: number,
-    userLng: number,
-    limit: number,
-  ): Promise<SupabaseFishingSpotRow[]> {
-    const { data, error } = (await this.supabaseService
-      .getClient()
-      .rpc('get_closest_fishing_spots', {
-        user_lat: userLat,
-        user_lng: userLng,
-        result_limit: limit,
-      })) as {
-      data: SupabaseFishingSpotRow[] | null;
-      error: { message: string } | null;
-    };
-
-    if (error) {
-      this.logger.error(
-        `get_closest_fishing_spots RPC hatasi: ${error.message}`,
-      );
-      // Non-fatal: caller falls back to user coordinates
-      return [];
-    }
-
-    return data ?? [];
-  }
+  // fetchClosestSpots metodu FishingSpotsService'e taşındı.
 
   private async fetchGearStock(): Promise<PromptGearStock> {
     const [categoriesResult, productsResult] = await Promise.all([

@@ -16,5 +16,7 @@ import { FishingSpotsController } from './fishing-spots.controller';
   controllers: [FishingSpotsController],
   // İş mantığını içeren servis
   providers: [FishingSpotsService],
+  // AiModule ve diğer modüllerin FishingSpotsService'i enjekte edebilmesi için dışa aktarılır
+  exports: [FishingSpotsService],
 })
 export class FishingSpotsModule {}
