@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -12,9 +13,11 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+
 import type { Request } from 'express';
 import { SupabaseAuthGuard } from '../orders/guards/supabase-auth.guard';
 import { CreateCatchDto } from './dto/create-catch.dto';
@@ -23,6 +26,7 @@ import {
   GetCatchesResponseDto,
 } from './dto/catch-response.dto';
 import { CatchesService } from './catches.service';
+import { GetCatchesQueryDto } from './dto/get-catches-query.dto';
 
 type RequestWithUser = Request & {
   user?: {
@@ -74,10 +78,25 @@ export class CatchesController {
   }
 
   @Get()
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @ApiOperation({
     summary: 'Kullaniciya ait av kayitlarini listeler',
     description:
-      'Sadece oturum acan kullanicinin av kayitlarini, en yeniden en eskiye dogru siralayarak dondurur.',
+      'Sadece oturum acan kullanicinin av kayitlarini dondurur. Limit ve siralama parametreleri ile filtrelenebilir.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Dondurulecek maksimum kayit sayisi',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Olusturulma tarihine gore siralama yonu (varsayilan: desc)',
+    example: 'desc',
   })
   @ApiResponse({
     status: 200,
@@ -85,13 +104,16 @@ export class CatchesController {
     type: GetCatchesResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Yetkilendirme basarisiz.' })
-  findAll(@Req() request: RequestWithUser): Promise<GetCatchesResponseDto> {
+  findAll(
+    @Req() request: RequestWithUser,
+    @Query() query: GetCatchesQueryDto,
+  ): Promise<GetCatchesResponseDto> {
     const userId = request.user?.id;
 
     if (!userId) {
       throw new UnauthorizedException('Kimlik dogrulanamadi');
     }
 
-    return this.catchesService.findAllByUserId(userId);
+    return this.catchesService.findAllByUserId(userId, query);
   }
 }

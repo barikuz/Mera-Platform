@@ -7,6 +7,7 @@ import {
   CreateCatchResponseDto,
   GetCatchesResponseDto,
 } from './dto/catch-response.dto';
+import { GetCatchesQueryDto, SortOrder } from './dto/get-catches-query.dto';
 
 @Injectable()
 export class CatchesService {
@@ -50,13 +51,24 @@ export class CatchesService {
     };
   }
 
-  async findAllByUserId(userId: string): Promise<GetCatchesResponseDto> {
-    const { data, error } = await this.supabaseService
+  async findAllByUserId(
+    userId: string,
+    query: GetCatchesQueryDto = {},
+  ): Promise<GetCatchesResponseDto> {
+    const ascending = query.sort === SortOrder.ASC;
+
+    let dbQuery = this.supabaseService
       .getClient()
       .from('catches')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending });
+
+    if (query.limit !== undefined) {
+      dbQuery = dbQuery.limit(query.limit);
+    }
+
+    const { data, error } = await dbQuery;
 
     if (error) {
       throw new InternalServerErrorException(
