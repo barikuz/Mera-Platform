@@ -5,10 +5,13 @@
  */
 import {
   BadGatewayException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
 import { SupabaseService } from '../supabase/supabase.service';
@@ -63,19 +66,27 @@ type SupabaseProductRow = {
   price: number | string | null;
 };
 
+/** Cache key prefix for fishing-condition AI results */
+const FISHING_CONDITIONS_CACHE_PREFIX = 'fishing_conditions_ai';
+
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   private readonly apiKey: string;
   private readonly genAI: GoogleGenAI;
   private readonly modelName = 'gemini-3-flash-preview';
+  private readonly cacheManager: Cache;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly supabaseService: SupabaseService,
     private readonly weatherService: WeatherService,
     private readonly fishingSpotsService: FishingSpotsService,
+    // Typed as `object` so TypeScript can emit runtime metadata with isolatedModules.
+    // Cache is a pure interface and has no runtime value to emit.
+    @Inject(CACHE_MANAGER) cacheManager: object,
   ) {
+    this.cacheManager = cacheManager as Cache;
     const key = this.configService.get<string>('GEMINI_API_KEY');
     if (!key) {
       this.logger.error('GEMINI_API_KEY ortam degiskeni bulunamadi!');
@@ -177,16 +188,34 @@ export class AiService {
         conditions: w.conditions,
       }));
 
-    // 5. Ask Gemini to interpret the conditions
+    // 5. Ask Gemini to interpret the conditions (cache-aware)
     const userPrompt = buildFishingConditionsUserPrompt(weatherContexts);
-    const aiResult = await this.generateJsonResponse<{
-      status: 'good' | 'okay' | 'poor';
-      description: string;
-    }>(
+
+    // Round coordinates to 2 decimal places (~1.1 km grid) for cache key.
+    const latKey = body.userLat.toFixed(2);
+    const lngKey = body.userLng.toFixed(2);
+    const cacheKey = `${FISHING_CONDITIONS_CACHE_PREFIX}:${latKey}:${lngKey}`;
+
+    type AiResult = { status: 'good' | 'okay' | 'poor'; description: string };
+
+    const cached = await this.cacheManager.get<AiResult>(cacheKey);
+
+    if (cached) {
+      this.logger.log(`[fishing-conditions] Cache HIT  – key=${cacheKey}`);
+      return { ai: { status: cached.status, description: cached.description } };
+    }
+
+    this.logger.log(
+      `[fishing-conditions] Cache MISS – key=${cacheKey}, calling Gemini`,
+    );
+
+    const aiResult = await this.generateJsonResponse<AiResult>(
       FISHING_CONDITIONS_SYSTEM_PROMPT,
       userPrompt,
       fishingConditionsResponseSchema,
     );
+
+    await this.cacheManager.set(cacheKey, aiResult);
 
     // 6. Return only the AI interpretation
     return {
