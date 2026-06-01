@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Get,
+  Query,
   UnauthorizedException,
   Post,
   Req,
@@ -11,6 +13,7 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -18,6 +21,8 @@ import type { Request } from 'express';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersService } from './orders.service.js';
 import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
+import { TopProductsQueryDto } from './dto/top-products-query.dto';
+import { TopProductsResponseDto } from './dto/top-products-response.dto';
 
 // Bu tip, guard tarafinda request'e eklenen kullanici bilgisini guvenli sekilde tasir.
 type RequestWithUser = Request & {
@@ -36,14 +41,14 @@ type RequestWithUser = Request & {
 };
 
 @ApiTags('Siparisler (Orders)')
-@ApiBearerAuth()
 @Controller('orders')
-@UseGuards(SupabaseAuthGuard)
-// Bu controller, yetkili kullanicinin siparis olusturma endpoint'ini sunar.
+// Bu controller, siparis olusturma ve istatistik endpoint'lerini sunar.
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @ApiBearerAuth()
+  @UseGuards(SupabaseAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @ApiOperation({
     summary: 'Yeni siparis olusturur',
@@ -75,5 +80,31 @@ export class OrdersController {
       request.user,
       clientIp,
     );
+  }
+
+  @Get('top-products')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @ApiOperation({
+    summary: 'En cok satan urunleri getirir',
+    description:
+      'Siparis gecmisine gore en cok siparis edilen urunleri sayiya gore sirali olarak dondurur.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Dondurulecek maksimum urun sayisi (varsayilan: 10)',
+    example: 5,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'En cok satan urunler basariyla getirildi.',
+    type: TopProductsResponseDto,
+  })
+  // Bu metot, herkese acik olarak en cok siparis edilen urunleri dondurur.
+  getTopProducts(
+    @Query() query: TopProductsQueryDto,
+  ): Promise<TopProductsResponseDto> {
+    return this.ordersService.getTopProducts(query.limit);
   }
 }

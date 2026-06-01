@@ -14,6 +14,7 @@ import {
   OrderItem,
   VerifiedProduct,
 } from './interfaces/orders.types.js';
+import { TopProductsResponseDto } from './dto/top-products-response.dto.js';
 
 // Bu servis, siparis olusturma akisini orkestre eder: fiyat dogrulama, odeme ve RPC kaydi.
 @Injectable()
@@ -174,5 +175,33 @@ export class OrdersService {
     );
 
     return verifiedProducts;
+  }
+
+  // En cok siparis edilen urunleri DB fonksiyonu araciligiyla getirir.
+  // Gruplama, sayma ve siralama tamamen PostgreSQL tarafinda yapilir.
+  // DB fonksiyonu: get_top_products (supabase/migrations/)
+  async getTopProducts(limit = 10): Promise<TopProductsResponseDto> {
+    const { data, error } = (await this.supabaseService
+      .getClient()
+      .rpc('get_top_products', { p_limit: limit })) as {
+      data: Array<{
+        name: string;
+        price: number;
+        image_url: string | null;
+        order_count: number;
+      }> | null;
+      error: { message: string } | null;
+    };
+
+    if (error) {
+      throw new InternalServerErrorException(
+        `En cok satan urunler getirilirken hata olustu: ${error.message}`,
+      );
+    }
+
+    return {
+      message: 'En cok satan urunler getirildi',
+      data: (data ?? []) as TopProductsResponseDto['data'],
+    };
   }
 }

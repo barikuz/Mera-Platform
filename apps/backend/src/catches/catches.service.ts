@@ -8,6 +8,7 @@ import {
   GetCatchesResponseDto,
 } from './dto/catch-response.dto';
 import { GetCatchesQueryDto, SortOrder } from './dto/get-catches-query.dto';
+import { TopFishResponseDto } from './dto/top-fish-response.dto';
 
 @Injectable()
 export class CatchesService {
@@ -116,5 +117,28 @@ export class CatchesService {
         weather_wind_speed_kmh: null,
       };
     }
+  }
+
+  // En cok tutulan balik turlerini DB fonksiyonu araciligiyla getirir.
+  // Gruplama, sayma ve siralama tamamen PostgreSQL tarafinda yapilir.
+  // DB fonksiyonu: get_top_fish (supabase/migrations/)
+  async getTopFish(limit = 10): Promise<TopFishResponseDto> {
+    const { data, error } = (await this.supabaseService
+      .getClient()
+      .rpc('get_top_fish', { p_limit: limit })) as {
+      data: Array<{ name: string; catch_count: number }> | null;
+      error: { message: string } | null;
+    };
+
+    if (error) {
+      throw new InternalServerErrorException(
+        `En cok tutulan balik turleri getirilirken hata olustu: ${error.message}`,
+      );
+    }
+
+    return {
+      message: 'En cok tutulan balik turleri getirildi',
+      data: (data ?? []).map((row) => row.name),
+    };
   }
 }

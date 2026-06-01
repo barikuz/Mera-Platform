@@ -27,6 +27,8 @@ import {
 } from './dto/catch-response.dto';
 import { CatchesService } from './catches.service';
 import { GetCatchesQueryDto } from './dto/get-catches-query.dto';
+import { TopFishQueryDto } from './dto/top-fish-query.dto';
+import { TopFishResponseDto } from './dto/top-fish-response.dto';
 
 type RequestWithUser = Request & {
   user?: {
@@ -44,13 +46,14 @@ type RequestWithUser = Request & {
 };
 
 @ApiTags('Avlar (Catches)')
-@ApiBearerAuth()
 @Controller('catches')
-@UseGuards(SupabaseAuthGuard)
+// Bu controller, av kayitlari ve istatistik endpoint'lerini sunar.
 export class CatchesController {
   constructor(private readonly catchesService: CatchesService) {}
 
   @Post()
+  @ApiBearerAuth()
+  @UseGuards(SupabaseAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @ApiOperation({
     summary: 'Yeni av kaydi olusturur',
@@ -78,6 +81,8 @@ export class CatchesController {
   }
 
   @Get()
+  @ApiBearerAuth()
+  @UseGuards(SupabaseAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @ApiOperation({
     summary: 'Kullaniciya ait av kayitlarini listeler',
@@ -115,5 +120,29 @@ export class CatchesController {
     }
 
     return this.catchesService.findAllByUserId(userId, query);
+  }
+
+  @Get('top-fish')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @ApiOperation({
+    summary: 'En cok tutulan balik turlerini getirir',
+    description:
+      'Tum av kayitlarina gore en sik yakalanan balik turlerini sayiya gore sirali olarak dondurur.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Dondurulecek maksimum balik turu sayisi (varsayilan: 10)',
+    example: 5,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'En cok tutulan balik turleri basariyla getirildi.',
+    type: TopFishResponseDto,
+  })
+  // Bu metot, herkese acik olarak en cok tutulan balik turlerini dondurur.
+  getTopFish(@Query() query: TopFishQueryDto): Promise<TopFishResponseDto> {
+    return this.catchesService.getTopFish(query.limit);
   }
 }
