@@ -8,6 +8,10 @@ import { fetchWeather, formatDepthRange } from "@/lib/assistant-api";
 interface SpotMarkerPopupProps {
   spot: FishingSpot;
   onDeselect: () => void;
+  /** Pixel X of the marker anchor relative to the map container */
+  anchorX: number;
+  /** Pixel Y of the marker anchor relative to the map container */
+  anchorY: number;
 }
 
 function WeatherMetric({
@@ -44,7 +48,12 @@ function WeatherSkeleton() {
   );
 }
 
-export function SpotMarkerPopup({ spot, onDeselect }: SpotMarkerPopupProps) {
+// Popup width in pixels — must match max-w-sm (384px)
+const POPUP_WIDTH = 280;
+// How many px above the marker anchor the popup bottom edge sits
+const PIN_OFFSET_PX = 52;
+
+export function SpotMarkerPopup({ spot, onDeselect, anchorX, anchorY }: SpotMarkerPopupProps) {
   const lat = spot.lat;
   const lng = spot.lng;
   const hasCoords = lat != null && lng != null;
@@ -60,9 +69,17 @@ export function SpotMarkerPopup({ spot, onDeselect }: SpotMarkerPopupProps) {
 
   return (
     <>
-      {/* Top info card */}
-      <div className="absolute top-3 left-3 right-3 z-10 pointer-events-auto">
-        <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-4 shadow-lg">
+      {/* Top info card — anchored above the marker */}
+      <div
+        className="absolute z-10 pointer-events-auto"
+        style={{
+          left: anchorX,
+          top: anchorY - PIN_OFFSET_PX,
+          width: POPUP_WIDTH,
+          transform: "translate(-50%, -100%)",
+        }}
+      >
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-lg">
           <h4 className="text-base font-bold text-foreground leading-snug mb-1">
             {spot.label}
           </h4>
@@ -82,8 +99,8 @@ export function SpotMarkerPopup({ spot, onDeselect }: SpotMarkerPopupProps) {
       </div>
 
       {/* Bottom weather panel */}
-      <div className="absolute bottom-3 left-3 right-3 z-10 pointer-events-auto">
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-lg">
+      <div className="absolute bottom-3 left-3 right-3 z-10 pointer-events-auto flex justify-center">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-4 shadow-lg">
           <div className="flex items-center justify-between gap-2 mb-4">
             <h4 className="text-sm font-bold text-foreground truncate min-w-0">
               {spot.label}

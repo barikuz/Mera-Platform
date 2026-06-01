@@ -52,18 +52,76 @@ function spotsWithCoords(spots: FishingSpot[]): FishingSpot[] {
   );
 }
 
+/** Converts a geographic position to pixel coords relative to the map container. */
+function latLngToPixel(
+  map: google.maps.Map,
+  lat: number,
+  lng: number
+): { x: number; y: number } | null {
+  const projection = map.getProjection();
+  const bounds = map.getBounds();
+  if (!projection || !bounds) return null;
+
+  const ne = bounds.getNorthEast();
+  const sw = bounds.getSouthWest();
+  const nePoint = projection.fromLatLngToPoint(ne)!;
+  const swPoint = projection.fromLatLngToPoint(sw)!;
+
+  const scale = Math.pow(2, map.getZoom() ?? 0);
+  const worldPoint = projection.fromLatLngToPoint(
+    new google.maps.LatLng(lat, lng)
+  )!;
+
+  return {
+    x: (worldPoint.x - swPoint.x) * scale,
+    y: (worldPoint.y - nePoint.y) * scale,
+  };
+}
+
 function DiscoveryMapInterior({
   spots,
   onSelectSpot,
   onMapClick,
+  selectedSpot,
+  onDeselectSpot,
 }: {
   spots: FishingSpot[];
   onSelectSpot: (id: string) => void;
   onMapClick: (e: MapMouseEvent) => void;
+  selectedSpot: FishingSpot | null;
+  onDeselectSpot: () => void;
 }) {
   const map = useMap();
   const isDark = useMapColorScheme();
   const validSpots = useMemo(() => spotsWithCoords(spots), [spots]);
+  const [popupPos, setPopupPos] = useState<{ x: number; y: number } | null>(null);
+
+  // Recompute pixel position on mount, spot change, and every map pan/zoom
+  useEffect(() => {
+    if (!map) return;
+
+    const compute = () => {
+      if (!selectedSpot?.lat || !selectedSpot?.lng) {
+        setPopupPos(null);
+        return;
+      }
+      setPopupPos(latLngToPixel(map, selectedSpot.lat, selectedSpot.lng));
+    };
+
+    // Defer initial calculation so setState isn't called synchronously in the effect body
+    const raf = requestAnimationFrame(compute);
+
+    const listeners = [
+      google.maps.event.addListener(map, "bounds_changed", compute),
+      google.maps.event.addListener(map, "center_changed", compute),
+      google.maps.event.addListener(map, "zoom_changed", compute),
+    ];
+
+    return () => {
+      cancelAnimationFrame(raf);
+      listeners.forEach((l) => google.maps.event.removeListener(l));
+    };
+  }, [map, selectedSpot]);
 
   useEffect(() => {
     if (!map || validSpots.length === 0) return;
@@ -88,30 +146,41 @@ function DiscoveryMapInterior({
       : ELAZIG_CENTER;
 
   return (
-    <Map
-      defaultCenter={defaultCenter}
-      defaultZoom={10}
-      mapId="spot-discovery-modal-map"
-      colorScheme={isDark ? "DARK" : "LIGHT"}
-      gestureHandling="greedy"
-      disableDefaultUI={false}
-      onClick={onMapClick}
-      className="w-full h-full"
-    >
-      {validSpots.map((spot) => (
-        <AdvancedMarker
-          key={spot.id}
-          position={{ lat: spot.lat!, lng: spot.lng! }}
-          onClick={(e) => {
-            console.log("Marker clicked:");
-            e.domEvent.stopPropagation();
-            onSelectSpot(spot.id);
-          }}
-        >
-          
-        </AdvancedMarker>
-      ))}
-    </Map>
+    <>
+      <Map
+        defaultCenter={defaultCenter}
+        defaultZoom={10}
+        mapId="spot-discovery-modal-map"
+        colorScheme={isDark ? "DARK" : "LIGHT"}
+        gestureHandling="greedy"
+        disableDefaultUI={false}
+        onClick={onMapClick}
+        className="w-full h-full"
+      >
+        {validSpots.map((spot) => (
+          <AdvancedMarker
+            key={spot.id}
+            position={{ lat: spot.lat!, lng: spot.lng! }}
+            onClick={(e) => {
+              console.log("Marker clicked:");
+              e.domEvent.stopPropagation();
+              onSelectSpot(spot.id);
+            }}
+          >
+            
+          </AdvancedMarker>
+        ))}
+      </Map>
+
+      {selectedSpot && popupPos && (
+        <SpotMarkerPopup
+          spot={selectedSpot}
+          onDeselect={onDeselectSpot}
+          anchorX={popupPos.x}
+          anchorY={popupPos.y}
+        />
+      )}
+    </>
   );
 }
 
@@ -220,21 +289,16 @@ export function SpotDiscoveryMapModal({
           </button>
         </div>
 
-        <div className="relative flex-1 min-h-0">
+        <div className="relative flex-1 min-h-0 overflow-hidden">
           <APIProvider apiKey={MAPS_API_KEY}>
             <DiscoveryMapInterior
               spots={spots}
               onSelectSpot={setSelectedSpotId}
               onMapClick={handleMapClick}
+              selectedSpot={selectedSpot}
+              onDeselectSpot={() => setSelectedSpotId(null)}
             />
           </APIProvider>
-
-          {selectedSpot && (
-            <SpotMarkerPopup
-              spot={selectedSpot}
-              onDeselect={() => setSelectedSpotId(null)}
-            />
-          )}
         </div>
 
         <div className="flex-shrink-0 px-4 py-3 border-t border-border dark:border-zinc-700 bg-white dark:bg-zinc-900">
