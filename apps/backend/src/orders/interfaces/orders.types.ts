@@ -105,9 +105,9 @@ export type RawOrderRow = {
   order_items: RawOrderItemRow[];
 };
 
-// Ham DB satiri: order_items tablosundan urun adi ile birlikte siparis kalemi.
+// Ham DB satiri: order_items tablosundan urun adi ve resim url ile birlikte siparis kalemi.
 export type RawOrderItemRow = {
   quantity: number;
   unit_price: number;
-  products: { name: string } | null;
+  products: { name: string; image_url: string | null } | null;
 };

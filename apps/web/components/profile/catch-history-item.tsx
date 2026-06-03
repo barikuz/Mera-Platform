@@ -2,6 +2,7 @@
 
 import { Clock, Scale, Ruler } from "lucide-react";
 import type { CatchRecord } from "@/lib/catches-api";
+import { formatDateTime } from "@/lib/format-date";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CatchMapThumbnail } from "./catch-map-thumbnail";
@@ -10,17 +11,6 @@ interface Props {
   record: CatchRecord;
   speciesName: string;
   onMapClick?: () => void;
-}
-
-function formatDateTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleString("tr-TR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 export function CatchHistoryItem({ record, speciesName, onMapClick }: Props) {

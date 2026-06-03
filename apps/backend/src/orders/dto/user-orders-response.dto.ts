@@ -9,6 +9,14 @@ export class OrderItemDetailDto {
   product_name!: string;
 
   @ApiProperty({
+    description: 'Urun resim URL',
+    example: 'https://example.com/images/shimano-nexave.jpg',
+    nullable: true,
+    required: false,
+  })
+  image_url!: string | null;
+
+  @ApiProperty({
     description: 'Siparis adedi',
     example: 2,
   })

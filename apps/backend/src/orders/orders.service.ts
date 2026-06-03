@@ -225,7 +225,7 @@ export class OrdersService {
           order_items (
             quantity,
             unit_price,
-            products ( name )
+            products ( name, image_url )
           )
         `,
       )
@@ -250,6 +250,7 @@ export class OrdersService {
       created_at: order.created_at,
       items: (order.order_items ?? []).map((item: RawOrderItemRow) => ({
         product_name: item.products?.name ?? 'Bilinmeyen Urun',
+        image_url: item.products?.image_url ?? null,
         quantity: item.quantity,
         unit_price: Number(item.unit_price),
       })),

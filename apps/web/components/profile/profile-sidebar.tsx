@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { LogOut, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ProfileSidebarProps {
@@ -54,6 +54,17 @@ export function ProfileSidebar({
         <Link href="/profile/add-catch">
           <Button className="w-full h-12 text-base gap-2" size="lg">
             Av Kaydı Ekle
+          </Button>
+        </Link>
+
+        <Link href="/orders">
+          <Button
+            variant="outline"
+            className="w-full h-12 text-base gap-2"
+            size="lg"
+          >
+            <ShoppingBag className="h-5 w-5" />
+            Siparişlerim
           </Button>
         </Link>
 

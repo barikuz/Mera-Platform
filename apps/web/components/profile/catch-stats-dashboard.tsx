@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Fish, TrendingUp } from "lucide-react";
 import type { CatchRecord, FishSpeciesCatalogItem } from "@/lib/catches-api";
+import { formatDateShort } from "@/lib/format-date";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "./empty-state";
 import { MetricsCards } from "./metrics-cards";
@@ -89,7 +90,7 @@ export function CatchStatsDashboard({ catches, species, isLoading, isError }: Pr
     // Group catches by day/date for a daily frequency timeline
     const dateMap = new Map<string, number>();
     sortedCatches.forEach((c) => {
-      const key = formatDate(c.created_at);
+      const key = formatDateShort(c.created_at);
       dateMap.set(key, (dateMap.get(key) ?? 0) + 1);
     });
 

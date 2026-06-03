@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { logout } from "@/lib/auth";
-import { LogOut, User as UserIcon, Settings } from "lucide-react";
+import { LogOut, User as UserIcon, ShoppingBag } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 /**
@@ -145,6 +145,18 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
             >
               <UserIcon className="h-4 w-4 text-muted-foreground" />
               Profilim
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/orders");
+              }}
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-card-foreground hover:bg-secondary/50 dark:hover:bg-mera-neutral-700/50 transition-colors cursor-pointer"
+              role="menuitem"
+            >
+              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+              Siparişlerim
             </button>
           </div>
 

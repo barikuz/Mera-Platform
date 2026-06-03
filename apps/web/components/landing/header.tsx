@@ -154,6 +154,14 @@ export function Header() {
                           <User className="h-5 w-5 text-muted-foreground" />
                           Profilim
                         </Link>
+                        <Link
+                          href="/orders"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground rounded-xl hover:bg-secondary/50 transition-colors"
+                        >
+                          <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+                          Siparişlerim
+                        </Link>
                         <button
                           type="button"
                           onClick={handleMobileLogout}
