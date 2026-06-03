@@ -93,3 +93,21 @@ export type IyzipayPaymentParams = {
   authUser?: AuthenticatedOrderUser;
   clientIp: string;
 };
+
+// Ham DB satiri: order_items joinli urun adi ile birlikte siparis kaydi.
+export type RawOrderRow = {
+  status: string;
+  total_amount: number;
+  shipping_name: string;
+  shipping_phone: string;
+  shipping_address: string;
+  created_at: string;
+  order_items: RawOrderItemRow[];
+};
+
+// Ham DB satiri: order_items tablosundan urun adi ile birlikte siparis kalemi.
+export type RawOrderItemRow = {
+  quantity: number;
+  unit_price: number;
+  products: { name: string } | null;
+};

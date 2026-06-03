@@ -12,9 +12,12 @@ import {
   AuthenticatedOrderUser,
   CreatedOrderPayload,
   OrderItem,
+  RawOrderItemRow,
+  RawOrderRow,
   VerifiedProduct,
 } from './interfaces/orders.types.js';
 import { TopProductsResponseDto } from './dto/top-products-response.dto.js';
+import { UserOrdersResponseDto } from './dto/user-orders-response.dto.js';
 
 // Bu servis, siparis olusturma akisini orkestre eder: fiyat dogrulama, odeme ve RPC kaydi.
 @Injectable()
@@ -202,6 +205,59 @@ export class OrdersService {
     return {
       message: 'En cok satan urunler getirildi',
       data: (data ?? []) as TopProductsResponseDto['data'],
+    };
+  }
+
+  // Kimlik dogrulanmis kullanicinin tum siparislerini, kalem ve urun detaylariyla birlikte getirir.
+  // Siparisler olusturulma tarihine gore azalan sirada siralanir (en yeni once).
+  async getUserOrders(userId: string): Promise<UserOrdersResponseDto> {
+    const { data, error } = (await this.supabaseService
+      .getClient()
+      .from('orders')
+      .select(
+        `
+          status,
+          total_amount,
+          shipping_name,
+          shipping_phone,
+          shipping_address,
+          created_at,
+          order_items (
+            quantity,
+            unit_price,
+            products ( name )
+          )
+        `,
+      )
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })) as {
+      data: RawOrderRow[] | null;
+      error: { message: string } | null;
+    };
+
+    if (error) {
+      throw new InternalServerErrorException(
+        `Siparisler getirilirken hata olustu: ${error.message}`,
+      );
+    }
+
+    const orders = (data ?? []).map((order: RawOrderRow) => ({
+      status: order.status,
+      total_amount: Number(order.total_amount),
+      shipping_name: order.shipping_name,
+      shipping_phone: order.shipping_phone,
+      shipping_address: order.shipping_address,
+      created_at: order.created_at,
+      items: (order.order_items ?? []).map((item: RawOrderItemRow) => ({
+        product_name: item.products?.name ?? 'Bilinmeyen Urun',
+        quantity: item.quantity,
+        unit_price: Number(item.unit_price),
+      })),
+    }));
+
+    return {
+      message: 'Siparisler basariyla getirildi',
+      data: orders,
     };
   }
 }

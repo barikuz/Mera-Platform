@@ -23,6 +23,7 @@ import { OrdersService } from './orders.service.js';
 import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
 import { TopProductsQueryDto } from './dto/top-products-query.dto';
 import { TopProductsResponseDto } from './dto/top-products-response.dto';
+import { UserOrdersResponseDto } from './dto/user-orders-response.dto';
 
 // Bu tip, guard tarafinda request'e eklenen kullanici bilgisini guvenli sekilde tasir.
 type RequestWithUser = Request & {
@@ -106,5 +107,32 @@ export class OrdersController {
     @Query() query: TopProductsQueryDto,
   ): Promise<TopProductsResponseDto> {
     return this.ordersService.getTopProducts(query.limit);
+  }
+
+  @Get()
+  @ApiBearerAuth()
+  @UseGuards(SupabaseAuthGuard)
+  @ApiOperation({
+    summary: 'Kullanicinin siparislerini getirir',
+    description:
+      'Kimlik dogrulanmis kullaniciya ait tum siparisleri, urun detaylariyla birlikte yeniden eskiye dogru sirali olarak dondurur.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Siparisler basariyla getirildi.',
+    type: UserOrdersResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Yetkilendirme basarisiz.' })
+  // Bu metot, token'dan alinan user_id ile yalnizca o kullaniciya ait siparisleri dondurur.
+  getUserOrders(
+    @Req() request: RequestWithUser,
+  ): Promise<UserOrdersResponseDto> {
+    const userId = request.user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedException('Kimlik dogrulanamadi');
+    }
+
+    return this.ordersService.getUserOrders(userId);
   }
 }
