@@ -1,0 +1,65 @@
+# Dependencies (each app installs its own via workspace root)
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+
+# Build outputs
+dist
+apps/backend/dist
+apps/web/.next
+apps/web/out
+
+# Environment files
+.env
+.env.*
+!.env.example
+apps/**/.env
+apps/**/.env.*
+!apps/**/.env.example
+
+# IDE and editor
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+apps/*/Dockerfile
+apps/*/.dockerignore
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test files
+coverage
+apps/backend/test
+**/*.spec.ts
+
+# TypeScript build artifacts
+*.tsbuildinfo
+next-env.d.ts
+
+# Supabase migrations (not needed at runtime)
+apps/backend/supabase
+packages/database/supabase
+
+# Misc config not needed at runtime
+.prettierrc
+**/eslint.config.mjs
+**/.prettierrc
+README.md
+*.md
