@@ -1,0 +1,35 @@
+steps:
+  # Build the Docker image from monorepo root using the web Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/web/Dockerfile'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/mera-web:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/mera-web:latest'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/mera-web:$BUILD_ID'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'mera-web'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/mera-web:$BUILD_ID'
+      - '--region'
+      - 'europe-west3'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/mera-web:latest'
