@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ProfileDropdown } from "@/components/auth/profile-dropdown";
 import { CartDropdown } from "@/components/cart/cart-dropdown";
+import { AppDownloadButton } from "@/components/ui/app-download-button";
 import { useAuth } from "@/hooks/use-auth";
 import { logout } from "@/lib/auth";
 import { Menu, Home, ShoppingBag, Sparkles, User, LogOut } from "lucide-react";
@@ -57,6 +58,7 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex md:items-center md:gap-2">
+            <AppDownloadButton />
             <CartDropdown />
             <ThemeToggle />
             {isLoading ? (
@@ -184,6 +186,7 @@ export function Header() {
                         </Link>
                       </>
                     )}
+                    <AppDownloadButton className="w-full justify-center rounded-xl mt-2" />
                   </div>
                 </div>
               </SheetContent>
