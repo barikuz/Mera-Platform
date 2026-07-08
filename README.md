@@ -4,19 +4,21 @@
 
 Bu monorepo, platformun **web ön yüzünü** (Next.js) ve **arka uç API'sini** (NestJS) npm workspaces altında birlikte barındırır.
 
+🌐 **Canlı Demo:** [mera-web-707814069017.europe-west3.run.app](https://mera-web-707814069017.europe-west3.run.app/)
+
 ---
 
 ## ✨ Temel Özellikler
 
 | Özellik                                     | Açıklama                                                                                                                   |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 📍 **Akıllı Nokta Önerileri**               | Kullanıcının bölgesine, mevsime ve hava koşullarına göre en verimli balık tutma yerlerini Gemini AI ile önerir.            |
+| 📍 **Akıllı Nokta Önerileri**               | Kullanıcının bölgesine ve hava koşullarına göre en verimli balık tutma yerlerini AI ile önerir.                            |
 | 🎣 **Kişiselleştirilmiş Ekipman Tavsiyesi** | Hedef balık türüne, avlak noktasına ve avlanma stiline göre mağaza stoklarından en uygun 3 parçalı ekipman seti oluşturur. |
 | 💡 **İpuçları ve Teknikler**                | Avlanma zamanı, olta aksiyonu, düğüm/takım ve uzman ipucu olmak üzere 4 kategori altında AI destekli taktik rehberi sunar. |
 | ⛅ **Hava Durumu ve Güvenlik Uyarıları**    | Avlak bölgesindeki anlık hava durumu ve balıkçı güvenliğini tehdit edebilecek gerçek zamanlı uyarıları gösterir.           |
 | 📊 **Av İstatistikleri Kaydı**              | Yakalanan balıkların tür, boyut, ağırlık ve konum verilerini kaydederek kişisel istatistik paneli sunar.                   |
-| 🗺️ **İnteraktif Mera Keşfi**                | Google Maps üzerinden balık tutma noktalarını harita üzerinde keşfetme ve hava durumu detaylarını görüntüleme.             |
-| 🛒 **E-Ticaret Mağazası**                   | Kategorilere göre filtrelenebilir, sepet yönetimli ve iyzico ödeme entegrasyonlu tek satıcılı balıkçılık mağazası.         |
+| 🗺️ **İnteraktif Mera Keşfi**                | Harita üzerinden balık tutma noktalarını harita üzerinde keşfetme ve hava durumu detaylarını görüntüleme.                  |
+| 🛒 **E-Ticaret Mağazası**                   | Kategorilere göre filtrelenebilir, sepet yönetimli ve ödeme entegrasyonlu tek satıcılı balıkçılık mağazası.                |
 | 🌙 **Koyu / Açık Mod**                      | Sistem tercihi veya kullanıcı seçimine göre otomatik tema desteği.                                                         |
 
 ---
@@ -206,7 +208,7 @@ Supabase PostgreSQL üzerinde yönetilen tablolar:
 | `order_items`    | Sipariş kalemleri (ürün, miktar, birim fiyat)          |
 | `catches`        | Av kayıtları (tür, boyut, ağırlık, konum, hava durumu) |
 
-> Detaylı veritabanı tasarımı, tablo ilişkileri ve tasarım kararları için bkz. [Mera (Web) Dökümantasyon.md](<Mera%20(Web)%20Dökümantasyon.md>).
+> Detaylı veritabanı tasarımı, tablo ilişkileri ve tasarım kararları için bkz. [Mera (Web) Dökümantasyon.pdf](<Mera%20(Web)%20Dökümantasyon.pdf>).
 
 ---
 
@@ -224,11 +226,11 @@ AI modülleri **Bağlam Enjeksiyonu (Context Injection)** yaklaşımını kullan
 
 ## 📚 Ek Dökümantasyon
 
-| Belge                                                                 | İçerik                                                                                                             |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [Mera (Web) Dökümantasyon.pdf](<Mera%20(Web)%20Dökümantasyon.md>)     | Web platform dökümantasyonu, kullanıcı senaryoları, veritabanı tasarımı, Gemini prompt stratejisi, UI/UX ekranları |
-| [Mera (Mobil) Dökümantasyon.pdf](<Mera%20(Mobil)%20Dökümantasyon.md>) | Mobil uygulama (Expo/React Native) dökümantasyonu                                                                  |
-| [İş Paketleri.pdf](İş%20Paketleri.md)                                 | Haftalık iş paketleri ve kilometre taşları                                                                         |
+| Belge                                                                  | İçerik                                                                                                             |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [Mera (Web) Dökümantasyon.pdf](<Mera%20(Web)%20Dökümantasyon.pdf>)     | Web platform dökümantasyonu, kullanıcı senaryoları, veritabanı tasarımı, Gemini prompt stratejisi, UI/UX ekranları |
+| [Mera (Mobil) Dökümantasyon.pdf](<Mera%20(Mobil)%20Dökümantasyon.pdf>) | Mobil uygulama (Expo/React Native) dökümantasyonu                                                                  |
+| [İş Paketleri.pdf](İş%20Paketleri.pdf)                                 | Haftalık iş paketleri ve kilometre taşları                                                                         |
 
 ---
 
