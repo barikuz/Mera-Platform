@@ -226,11 +226,10 @@ AI modülleri **Bağlam Enjeksiyonu (Context Injection)** yaklaşımını kullan
 
 ## 📚 Ek Dökümantasyon
 
-| Belge                                                                  | İçerik                                                                                                             |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [Mera (Web) Dökümantasyon.pdf](<Mera%20(Web)%20Dökümantasyon.pdf>)     | Web platform dökümantasyonu, kullanıcı senaryoları, veritabanı tasarımı, Gemini prompt stratejisi, UI/UX ekranları |
-| [Mera (Mobil) Dökümantasyon.pdf](<Mera%20(Mobil)%20Dökümantasyon.pdf>) | Mobil uygulama (Expo/React Native) dökümantasyonu                                                                  |
-| [İş Paketleri.pdf](İş%20Paketleri.pdf)                                 | Haftalık iş paketleri ve kilometre taşları                                                                         |
+| Belge                                                              | İçerik                                                                                                             |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| [Mera (Web) Dökümantasyon.pdf](<Mera%20(Web)%20Dökümantasyon.pdf>) | Web platform dökümantasyonu, kullanıcı senaryoları, veritabanı tasarımı, Gemini prompt stratejisi, UI/UX ekranları |
+| [İş Paketleri.pdf](İş%20Paketleri.pdf)                             | Haftalık iş paketleri ve kilometre taşları                                                                         |
 
 ---
 
