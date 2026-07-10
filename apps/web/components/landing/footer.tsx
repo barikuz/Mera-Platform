@@ -69,9 +69,9 @@ export function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-mera-neutral-800 dark:border-mera-neutral-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-mera-neutral-500">
-            © 2026 Mera. Tüm hakları saklıdır.
+        <div className="mt-12 pt-8 border-t border-mera-neutral-800 dark:border-mera-neutral-800 flex flex-col items-center gap-4">
+          <p className="text-base text-mera-neutral-600 dark:text-mera-neutral-600 italic text-center max-w-xl">
+            Mera, öğrenme ve portföy amacıyla geliştirilen kişisel bir projedir. Ticari bir ürün veya hizmet değildir.          
           </p>
         </div>
       </div>
